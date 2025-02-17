@@ -36,16 +36,17 @@ class BasicBlock(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # 1. Go through conv1, bn1, relu
-        # 2. Go through conv2, bn
+        p1 = self.conv1(x)
+        p1 = self.bn1(p1)
+        p1 = nn.ReLU()(p1)
+        # 2. Go through conv2, bn2
+        p2 = self.conv2(p1)
+        p2 = self.bn2(p2)
         # 3. Combine with shortcut output, and go through relu
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = nn.ReLU()(x)
-        x = self.conv2(x)
-        x = self.bn2(x)
-        x = x + self.shortcut(x)
-        x = nn.ReLU()(x)
-        return x
+        p3 = p2 + self.shortcut(x)
+        p3 = nn.ReLU()(p3)
+
+        return p3
 
 
 class ResNet18(nn.Module):
