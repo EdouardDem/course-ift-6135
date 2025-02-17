@@ -1,0 +1,15 @@
+name: ift-6135-hw1
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy
+  - matplotlib
+  - pandas
+  - scikit-learn
+  - seaborn
+  - jupyter
+  - ipywidgets
+  - tqdm
+  - pytorch
+  - torchvision
