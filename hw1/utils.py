@@ -61,7 +61,19 @@ def cross_entropy_loss(logits: torch.Tensor, labels: torch.Tensor):
     :param labels: [batch_size]
     :return loss 
     """
-    raise NotImplementedError
+    # From https://medium.com/@chris.p.hughes10/a-brief-overview-of-cross-entropy-loss-523aa56b75d5
+    # Compute softmax
+    shifted_logits = logits - torch.max(logits, dim=1, keepdim=True)[0]
+    exp_logits = torch.exp(shifted_logits)
+    probs = exp_logits / torch.sum(exp_logits, dim=1, keepdim=True)
+    
+    # Get the probabilities corresponding to the correct labels
+    batch_size = logits.size(0)
+    label_probs = probs[torch.arange(batch_size), labels]
+    
+    loss = -torch.log(label_probs)
+    return torch.mean(loss)
+
 
 def compute_accuracy(logits: torch.Tensor, labels: torch.Tensor):
     """ Compute the accuracy of the batch """
