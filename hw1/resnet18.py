@@ -4,14 +4,16 @@ Reference:
 [1] Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun
     Deep Residual Learning for Image Recognition. arXiv:1512.03385
 '''
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision import utils
 
 
 class BasicBlock(nn.Module):
     
-    def __init__(self, in_planes, planes, stride=1):
+    def __init__(self, in_planes: int, planes: int, stride: int = 1):
         """
             :param in_planes: input channels
             :param planes: output channels
@@ -19,40 +21,45 @@ class BasicBlock(nn.Module):
         """
         super(BasicBlock, self).__init__()
         # Uncomment the following lines, replace the ? with correct values.
-        #self.conv1 = nn.Conv2d(
-        #    ?, planes, kernel_size=3, stride=?, padding=1, bias=False)
-        #self.bn1 = nn.BatchNorm2d(?)
-        #self.conv2 = nn.Conv2d(planes, ?, kernel_size=3,
-        #                       stride=1, padding=1, bias=False)
-        #self.bn2 = nn.BatchNorm2d(?)
+        self.conv1 = nn.Conv2d(
+            in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(planes)
 
-        #self.shortcut = nn.Sequential()
-        #if stride != 1 or in_planes != planes:
-        #    self.shortcut = nn.Sequential(
-        #        nn.Conv2d(?, ?,
-        #                  kernel_size=1, stride=stride, bias=False),
-        #        nn.BatchNorm2d(?)
-        #    )
+        self.shortcut = nn.Sequential()
+        if stride != 1 or in_planes != planes:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_planes, planes, kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(planes)
+            )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         # 1. Go through conv1, bn1, relu
         # 2. Go through conv2, bn
         # 3. Combine with shortcut output, and go through relu
-        raise NotImplementedError
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = nn.ReLU()(x)
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = x + self.shortcut(x)
+        x = nn.ReLU()(x)
+        return x
 
 
 class ResNet18(nn.Module):
     def __init__(self, num_classes=10):
         super(ResNet18, self).__init__()
         # Uncomment the following lines and replace the ? with correct values
-        #self.conv1 = nn.Conv2d(3, 64, kernel_size=3,
-        #                       stride=1, padding=1, bias=False)
-        #self.bn1 = nn.BatchNorm2d(?)
-        #self.layer1 = self._make_layer(64, 64, stride=1)
-        #self.layer2 = self._make_layer(?, 128, stride=2)
-        #self.layer3 = self._make_layer(?, 256, stride=2)
-        #self.layer4 = self._make_layer(?, 512, stride=2)
-        #self.linear = nn.Linear(?, num_classes)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=3,
+                               stride=1, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(64)
+        self.layer1 = self._make_layer(64, 64, stride=1)
+        self.layer2 = self._make_layer(64, 128, stride=2)
+        self.layer3 = self._make_layer(128, 256, stride=2)
+        self.layer4 = self._make_layer(256, 512, stride=2)
+        self.linear = nn.Linear(512, num_classes)
 
     def _make_layer(self, in_planes, planes, stride):
         layers = []
@@ -60,10 +67,19 @@ class ResNet18(nn.Module):
         layers.append(BasicBlock(planes, planes, 1))
         return nn.Sequential(*layers)
 
-    def forward(self, images):
+    def forward(self, images: torch.Tensor) -> torch.Tensor:
         """ input images and output logits """
-        raise NotImplementedError
+        x = self.conv1(images)
+        x = self.bn1(x)
+        x = nn.ReLU()(x)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        x = x.mean(dim=(2, 3))
+        x = self.linear(x)
+        return x
 
-    def visualize(self, logdir):
+    def visualize(self, logdir: str) -> None:
         """ Visualize the kernel in the desired directory """
-        raise NotImplementedError
+        utils.save_image(self.conv1.weight, os.path.join(logdir, 'conv1.png'))
