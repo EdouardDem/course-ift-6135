@@ -3,6 +3,7 @@ import torch
 import math
 import matplotlib.pyplot as plt
 import os
+from torchvision import utils
 
 
 class PatchEmbed(nn.Module):
@@ -17,7 +18,14 @@ class PatchEmbed(nn.Module):
         self.num_patches = self.grid_size * self.grid_size
         
         # Uncomment this line and replace ? with correct values
-        #self.proj = nn.Conv2d(?, ?, kernel_size=?, stride=?)
+        self.proj = nn.Conv2d(
+            in_chans,
+            embed_dim,
+            # patch_size*patch_size*in_chans,
+            kernel_size=patch_size,
+            stride=patch_size
+        )
+
 
     def forward(self, x):
         """
@@ -76,7 +84,16 @@ class MixerBlock(nn.Module):
         self.mlp_channels = Mlp(dim, channels_dim, act_layer=act_layer, drop=drop)
 
     def forward(self, x):
-        raise NotImplementedError
+        
+        p1 = self.norm1(x)
+        p1 = p1.transpose(1, 2)
+        p1 = self.mlp_tokens(p1)
+        p1 = p1.transpose(1, 2)
+
+        p2 = self.norm2(p1 + x)
+        p2 = self.mlp_channels(p2)
+        
+        return p1 + p2
     
 
 class MLPMixer(nn.Module):
@@ -113,14 +130,20 @@ class MLPMixer(nn.Module):
         :param images: [batch, 3, img_size, img_size]
         """
         # step1: Go through the patch embedding
+        x = self.patchemb(images)
         # step 2 Go through the mixer blocks
+        x = self.blocks(x)
         # step 3 go through layer norm
+        x = self.norm(x)
         # step 4 Global averaging spatially
+        x = x.mean(dim=(1))
         # Classification
-        raise NotImplementedError
+        x = self.head(x)
+        return x
     
     def visualize(self, logdir):
         """ Visualize the token mixer layer 
         in the desired directory """
-        raise NotImplementedError
+        utils.save_image(self.blocks[0].mlp_tokens.fc1.weight, os.path.join(logdir, 'mlp_tokens_fc1.png'))
+        utils.save_image(self.blocks[0].mlp_tokens.fc2.weight, os.path.join(logdir, 'mlp_tokens_fc2.png'))
  
