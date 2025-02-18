@@ -4,12 +4,14 @@ from utils import generate_plots
 # Configuration
 base_dir = "logs/question-4"
 log_dirs = [
+    os.path.join(base_dir, "mlpmixer-2"),
     os.path.join(base_dir, "mlpmixer-4"),
     os.path.join(base_dir, "mlpmixer-8"),
     os.path.join(base_dir, "mlpmixer-16")
 ]
 
 legend_names = [
+    "patch_size=2",
     "patch_size=4",
     "patch_size=8",
     "patch_size=16"
