@@ -2,3 +2,5 @@ exps
 *.png
 __pycache__/
 data/
+logs/
+plots/
