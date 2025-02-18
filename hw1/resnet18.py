@@ -33,6 +33,13 @@ class BasicBlock(nn.Module):
                 nn.Conv2d(in_planes, planes, kernel_size=1, stride=stride, bias=False),
                 nn.BatchNorm2d(planes)
             )
+            # Init weights with kaiming
+            nn.init.kaiming_normal_(self.shortcut[0].weight)
+        
+        # Init weights with kaiming
+        # https://datascience.stackexchange.com/questions/13061/when-to-use-he-or-glorot-normal-initialization-over-uniform-init-and-what-are
+        nn.init.kaiming_normal_(self.conv1.weight)
+        nn.init.kaiming_normal_(self.conv2.weight)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # 1. Go through conv1, bn1, relu
@@ -61,6 +68,11 @@ class ResNet18(nn.Module):
         self.layer3 = self._make_layer(128, 256, stride=2)
         self.layer4 = self._make_layer(256, 512, stride=2)
         self.linear = nn.Linear(512, num_classes)
+
+        # Init weights with kaiming
+        nn.init.kaiming_normal_(self.conv1.weight)
+        nn.init.kaiming_normal_(self.linear.weight)
+        nn.init.zeros_(self.linear.bias)
 
     def _make_layer(self, in_planes, planes, stride):
         layers = []
