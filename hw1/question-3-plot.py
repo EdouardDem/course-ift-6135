@@ -9,7 +9,6 @@ log_dirs = [
     os.path.join(base_dir, "resnet18-0-00001")
 ]
 
-# Learning rates pour la légende (dans le même ordre que log_dirs)
 legend_names = [
     "lr=0.001",
     "lr=0.0001",
