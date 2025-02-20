@@ -57,6 +57,7 @@ function run_experiment() {
         --model mlpmixer \
         --model_config $config_path \
         --visualize \
+        --epochs 40 \
         --logdir "$logdir"
 }
 

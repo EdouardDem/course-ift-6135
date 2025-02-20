@@ -10,6 +10,7 @@ function run_experiment() {
         --lr $2 \
         --weight_decay $3 \
         --visualize \
+        --epochs 40 \
         --model_config ./model_configs/resnet18.json \
         --logdir ./logs/question-5/resnet18-$4
 }

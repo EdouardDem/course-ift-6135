@@ -4,7 +4,7 @@ set -e
 
 function run_experiment() {
     echo "Running experiment with lr $1"
-    python main.py --model resnet18 --optimizer adam --model_config ./model_configs/resnet18.json --lr $1 --visualize --logdir ./logs/question-3/resnet18-0-$2
+    python main.py --model resnet18 --optimizer adam --model_config ./model_configs/resnet18.json --lr $1 --visualize --epochs 40 --logdir ./logs/question-3/resnet18-0-$2
 }
 
 # run_experiment 0.1 1

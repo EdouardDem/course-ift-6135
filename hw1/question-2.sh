@@ -3,7 +3,7 @@
 set -e
 
 function run_experiment() {
-    python main.py --model mlp --model_config ./model_configs/question-2/$1.json --logdir ./logs/question-2/$1
+    python main.py --model mlp --model_config ./model_configs/question-2/$1.json --epochs 40 --logdir ./logs/question-2/$1
 }
 
 run_experiment mlp-relu
