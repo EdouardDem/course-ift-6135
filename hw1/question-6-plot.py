@@ -76,12 +76,15 @@ def generate_embed_dim_plots():
         
         print(f"Generated plots for {metric}")
 
-def create_metrics_plot_50epochs():
-    """Create a plot showing all metrics for the 50 epochs experiment"""
+def create_metrics_plot_epochs(epochs_num):
+    """Create a plot showing all metrics for the specified epochs experiment
+    Args:
+        epochs_num: int, number of epochs (50 or 100)
+    """
     plt.figure(figsize=(12, 8))
     
     # Charger les résultats
-    exp_name = "mlpmixer_e512_b4_d00_50epochs"
+    exp_name = f"mlpmixer_e512_b4_d00_{epochs_num}epochs"
     try:
         results = load_results(os.path.join(base_dir, exp_name))
         epochs = range(1, len(results['train_losses']) + 1)
@@ -104,7 +107,7 @@ def create_metrics_plot_50epochs():
         ax2.tick_params(axis='y', labelcolor='r')
         
         # Ajouter le titre
-        plt.title('MLPMixer Training Metrics (e512, b4, d0.0, 50 epochs)')
+        plt.title(f'MLPMixer Training Metrics (e512, b4, d0.0, {epochs_num} epochs)')
         
         # Combiner les légendes des deux axes
         lns = l1 + l2 + l3 + l4
@@ -118,11 +121,11 @@ def create_metrics_plot_50epochs():
         # Sauvegarder le graphique
         save_dir = "plots/question-6"
         os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, 'mlpmixer_50epochs_metrics.png')
+        save_path = os.path.join(save_dir, f'mlpmixer_{epochs_num}epochs_metrics.png')
         fig.savefig(save_path, bbox_inches='tight', dpi=300)
         plt.close(fig)
         
-        print(f"Generated 50 epochs metrics plot in {save_dir}")
+        print(f"Generated {epochs_num} epochs metrics plot in {save_dir}")
         
     except FileNotFoundError:
         print(f"Warning: No results found for {exp_name}")
@@ -131,4 +134,6 @@ if __name__ == "__main__":
     # Set style
     sns.set_style("whitegrid")
     generate_embed_dim_plots()
-    create_metrics_plot_50epochs() 
+    # Générer les graphiques pour 50 et 100 époques
+    create_metrics_plot_epochs(50)
+    create_metrics_plot_epochs(100) 
