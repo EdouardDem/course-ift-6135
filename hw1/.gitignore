@@ -2,6 +2,3 @@ exps
 *.png
 __pycache__/
 data/
-logs/
-plots/
-model_configs/question-6/
