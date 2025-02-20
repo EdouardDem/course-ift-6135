@@ -7,14 +7,14 @@ import numpy as np
 # Configuration
 base_dir = "logs/question-6"
 embed_dims = [256, 512, 1024]
-num_blocks = [4, 6, 8]
+num_blocks = [2, 4, 6]
 drop_rates = [0.0, 0.3, 0.5]
 
 # Définir une palette de couleurs distincte pour chaque num_blocks
 block_colors = {
-    4: 'blue',
-    6: 'red',
-    8: 'green'
+    2: 'blue',
+    4: 'red',
+    6: 'green'
 }
 
 def load_results(logdir):

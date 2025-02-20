@@ -4,7 +4,7 @@ set -e
 
 # Définir les valeurs pour la grid search
 embed_dims=(256 512 1024)
-num_blocks=(4 6 8)
+num_blocks=(2 4 6)
 drop_rates=(0.0 0.3 0.5)
 
 function generate_config() {
@@ -39,6 +39,13 @@ function run_experiment() {
     # Créer un nom unique pour l'expérience
     local exp_name="mlpmixer_e${embed_dim}_b${num_blocks}_d${drop_rate//.}"
     local config_path="./model_configs/question-6/${exp_name}.json"
+    local logdir="./logs/question-6/${exp_name}"    
+
+    # If the logs folder already exists, skip the experiment
+    if [ -d "$logdir" ]; then
+        echo "Logs folder already exists for ${exp_name}. Skipping experiment."
+        return
+    fi
     
     echo "Running experiment with embed_dim=${embed_dim}, num_blocks=${num_blocks}, drop_rate=${drop_rate}"
     
@@ -50,14 +57,14 @@ function run_experiment() {
         --model mlpmixer \
         --model_config $config_path \
         --visualize \
-        --logdir "./logs/question-6/${exp_name}"
+        --logdir "$logdir"
 }
 
 # Exécuter la grid search
 for embed_dim in "${embed_dims[@]}"; do
-    for num_blocks in "${num_blocks[@]}"; do
+    for num_block in "${num_blocks[@]}"; do
         for drop_rate in "${drop_rates[@]}"; do
-            run_experiment $embed_dim $num_blocks $drop_rate
+            run_experiment $embed_dim $num_block $drop_rate
         done
     done
 done 
