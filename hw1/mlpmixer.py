@@ -141,9 +141,20 @@ class MLPMixer(nn.Module):
         x = self.head(x)
         return x
     
-    def visualize(self, logdir):
-        """ Visualize the token mixer layer 
-        in the desired directory """
-        utils.save_image(self.blocks[0].mlp_tokens.fc1.weight, os.path.join(logdir, 'mlp_tokens_fc1.png'))
-        utils.save_image(self.blocks[0].mlp_tokens.fc2.weight, os.path.join(logdir, 'mlp_tokens_fc2.png'))
+    def visualize(self, logdir: str) -> None:
+        """Visualize the first layer weights in the desired directory"""
+        # Récupérer les poids du patch embedding
+        patch_weights = self.patchemb.proj.weight  # Shape: [embed_dim, channels, patch_size, patch_size]
+        
+        # Prendre les 64 premiers filtres
+        n_filters = min(64, patch_weights.shape[0])
+        filters = patch_weights[:n_filters]
+        
+        # Normaliser les poids pour la visualisation
+        filters = (filters - filters.min()) / (filters.max() - filters.min())
+        
+        # Sauvegarder l'image
+        utils.save_image(filters, os.path.join(logdir, 'patch_embed.png'),
+                        nrow=8,  # 8 images par ligne
+                        padding=2)  # Espacement entre les images
  
