@@ -76,7 +76,59 @@ def generate_embed_dim_plots():
         
         print(f"Generated plots for {metric}")
 
+def create_metrics_plot_50epochs():
+    """Create a plot showing all metrics for the 50 epochs experiment"""
+    plt.figure(figsize=(12, 8))
+    
+    # Charger les résultats
+    exp_name = "mlpmixer_e512_b4_d00_50epochs"
+    try:
+        results = load_results(os.path.join(base_dir, exp_name))
+        epochs = range(1, len(results['train_losses']) + 1)
+        
+        # Créer deux axes y pour les losses et accuracies
+        fig, ax1 = plt.subplots(figsize=(12, 8))
+        ax2 = ax1.twinx()
+        
+        # Tracer les losses sur l'axe y gauche
+        l1 = ax1.plot(epochs, results['train_losses'], 'b-', label='Train Loss', linewidth=2)
+        l2 = ax1.plot(epochs, results['valid_losses'], 'b--', label='Valid Loss', linewidth=2)
+        ax1.set_xlabel('Epochs')
+        ax1.set_ylabel('Loss', color='b')
+        ax1.tick_params(axis='y', labelcolor='b')
+        
+        # Tracer les accuracies sur l'axe y droit
+        l3 = ax2.plot(epochs, results['train_accs'], 'r-', label='Train Acc', linewidth=2)
+        l4 = ax2.plot(epochs, results['valid_accs'], 'r--', label='Valid Acc', linewidth=2)
+        ax2.set_ylabel('Accuracy', color='r')
+        ax2.tick_params(axis='y', labelcolor='r')
+        
+        # Ajouter le titre
+        plt.title('MLPMixer Training Metrics (e512, b4, d0.0, 50 epochs)')
+        
+        # Combiner les légendes des deux axes
+        lns = l1 + l2 + l3 + l4
+        labs = [l.get_label() for l in lns]
+        ax1.legend(lns, labs, loc='center right')
+        
+        # Ajuster la mise en page
+        plt.grid(True, alpha=0.3)
+        fig.tight_layout()
+        
+        # Sauvegarder le graphique
+        save_dir = "plots/question-6"
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, 'mlpmixer_50epochs_metrics.png')
+        fig.savefig(save_path, bbox_inches='tight', dpi=300)
+        plt.close(fig)
+        
+        print(f"Generated 50 epochs metrics plot in {save_dir}")
+        
+    except FileNotFoundError:
+        print(f"Warning: No results found for {exp_name}")
+
 if __name__ == "__main__":
     # Set style
     sns.set_style("whitegrid")
-    generate_embed_dim_plots() 
+    generate_embed_dim_plots()
+    create_metrics_plot_50epochs() 
