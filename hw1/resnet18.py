@@ -96,3 +96,34 @@ class ResNet18(nn.Module):
     def visualize(self, logdir: str) -> None:
         """ Visualize the kernel in the desired directory """
         utils.save_image(self.conv1.weight, os.path.join(logdir, 'conv1.png'))
+    
+    def get_gradient_flow(self) -> dict:
+        gradients = {
+            'hidden_layers': [],
+            'output_layer': None
+        }
+        
+        # Gradient de la première couche de convolution
+        if self.conv1.weight.grad is not None:
+            grad_mean = self.conv1.weight.grad.abs().mean().item()
+            gradients['hidden_layers'].append(grad_mean)
+        
+        # Gradients des couches de ResNet (layer1, layer2, layer3, layer4)
+        for layer in [self.layer1, self.layer2, self.layer3, self.layer4]:
+            layer_grads = []
+            for block in layer:  # Chaque layer contient 2 BasicBlocks
+                if block.conv1.weight.grad is not None and block.conv2.weight.grad is not None:
+                    # Moyenne des gradients des deux convolutions du block
+                    block_grad = (block.conv1.weight.grad.abs().mean().item() + 
+                                block.conv2.weight.grad.abs().mean().item()) / 2
+                    layer_grads.append(block_grad)
+            if layer_grads:
+                # Moyenne des gradients des blocks dans la layer
+                gradients['hidden_layers'].append(sum(layer_grads) / len(layer_grads))
+            
+        # Gradient de la couche linéaire finale
+        if self.linear.weight.grad is not None:
+            grad_mean = self.linear.weight.grad.abs().mean().item()
+            gradients['output_layer'] = grad_mean
+            
+        return gradients

@@ -98,7 +98,7 @@ class MixerBlock(nn.Module):
 
 class MLPMixer(nn.Module):
     def __init__(self, num_classes, img_size, patch_size, embed_dim, num_blocks, 
-                 drop_rate=0., activation='gelu'):
+                 drop_rate=0., activation='gelu', mlp_ratio_tokens=0.5, mlp_ratio_channels=4.0):
         super(MLPMixer, self).__init__()
         self.patchemb = PatchEmbed(img_size=img_size, 
                                    patch_size=patch_size, 
@@ -107,6 +107,7 @@ class MLPMixer(nn.Module):
         self.blocks = nn.Sequential(*[
             MixerBlock(
                 dim=embed_dim, seq_len=self.patchemb.num_patches, 
+                mlp_ratio=(mlp_ratio_tokens, mlp_ratio_channels),
                 activation=activation, drop=drop_rate)
             for _ in range(num_blocks)])
         self.norm = nn.LayerNorm(embed_dim)
@@ -158,3 +159,41 @@ class MLPMixer(nn.Module):
                         nrow=8,  # 8 images par ligne
                         padding=2)  # Espacement entre les images
  
+
+    def get_gradient_flow(self) -> dict:
+        gradients = {
+            'hidden_layers': [],
+            'output_layer': None
+        }
+        
+        # Gradient du patch embedding
+        if self.patchemb.proj.weight.grad is not None:
+            grad_mean = self.patchemb.proj.weight.grad.abs().mean().item()
+            gradients['hidden_layers'].append(grad_mean)
+        
+        # Gradients des mixer blocks
+        for block in self.blocks:
+            block_grads = []
+            
+            # Gradient du MLP pour le mixing des tokens
+            if block.mlp_tokens.fc1.weight.grad is not None and block.mlp_tokens.fc2.weight.grad is not None:
+                token_grad = (block.mlp_tokens.fc1.weight.grad.abs().mean().item() +
+                            block.mlp_tokens.fc2.weight.grad.abs().mean().item()) / 2
+                block_grads.append(token_grad)
+            
+            # Gradient du MLP pour le mixing des channels
+            if block.mlp_channels.fc1.weight.grad is not None and block.mlp_channels.fc2.weight.grad is not None:
+                channel_grad = (block.mlp_channels.fc1.weight.grad.abs().mean().item() +
+                              block.mlp_channels.fc2.weight.grad.abs().mean().item()) / 2
+                block_grads.append(channel_grad)
+            
+            if block_grads:
+                # Moyenne des gradients du block (token mixing et channel mixing)
+                gradients['hidden_layers'].append(sum(block_grads) / len(block_grads))
+        
+        # Gradient de la couche de classification (head)
+        if self.head.weight.grad is not None:
+            grad_mean = self.head.weight.grad.abs().mean().item()
+            gradients['output_layer'] = grad_mean
+            
+        return gradients

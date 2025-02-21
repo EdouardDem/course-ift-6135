@@ -125,3 +125,20 @@ class MLP(torch.nn.Module):
         logits = self.output_layer(x)
         
         return logits
+
+    def get_gradient_flow(self) -> dict:
+        gradients = {
+            'hidden_layers': [],
+            'output_layer': None
+        }
+        
+        for idx, layer in enumerate(self.hidden_layers):
+            if layer.weight.grad is not None:
+                grad_mean = layer.weight.grad.abs().mean().item()
+                gradients['hidden_layers'].append(grad_mean)
+            
+        if self.output_layer.weight.grad is not None:
+            grad_mean = self.output_layer.weight.grad.abs().mean().item()
+            gradients['output_layer'] = grad_mean
+            
+        return gradients

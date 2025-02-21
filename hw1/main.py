@@ -25,6 +25,7 @@ def train(epoch, model, dataloader, optimizer, args):
     total_iters = 0
     epoch_accuracy=0
     epoch_loss=0
+    gradient_flow = None
     start_time = time.time()
     for idx, batch in enumerate(dataloader):
         batch = to_device(batch, args.device)
@@ -42,8 +43,12 @@ def train(epoch, model, dataloader, optimizer, args):
 
         if idx % args.print_every == 0:
             tqdm.write(f"[TRAIN] Epoch: {epoch}, Iter: {idx}, Loss: {loss.item():.5f}")
+    
+    # TODO: Should be done for every batch
+    gradient_flow = model.get_gradient_flow()
+        
     tqdm.write(f"== [TRAIN] Epoch: {epoch}, Accuracy: {epoch_accuracy:.3f} ==>")
-    return epoch_loss, epoch_accuracy, time.time() - start_time
+    return epoch_loss, epoch_accuracy, time.time() - start_time, gradient_flow
 
 
 def evaluate(epoch, model, dataloader, args, mode="val"):
@@ -121,6 +126,12 @@ if __name__ == "__main__":
             model_config = json.load(f)
     else:
         raise ValueError('Please provide a model config json')
+    
+    # Override mlp_ratio values with command line arguments if model is mlpmixer
+    if args.model == 'mlpmixer':
+        model_config['mlp_ratio_tokens'] = args.mlp_ratio_tokens
+        model_config['mlp_ratio_channels'] = args.mlp_ratio_channels
+        
     print(f'########## {args.model.upper()} CONFIG ################')
     for key, val in model_config.items():
         print(f'{key}:\t{val}')
@@ -156,6 +167,7 @@ if __name__ == "__main__":
     train_losses, valid_losses = [], []
     train_accs, valid_accs = [], []
     train_times, valid_times = [], []
+    gradient_flows = []  # Nouvelle liste pour stocker les gradients
     
     # We define a set of data loaders that we can use for various purposes later.
     train_dataloader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, drop_last=True, pin_memory=True, num_workers=4)
@@ -163,12 +175,14 @@ if __name__ == "__main__":
     test_dataloader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False, drop_last=False, num_workers=4)
     for epoch in range(args.epochs):
         tqdm.write(f"====== Epoch {epoch} ======>")
-        loss, acc, wall_time = train(epoch, model, train_dataloader, optimizer,args)
+        loss, acc, wall_time, grad_flow = train(epoch, model, train_dataloader, optimizer, args)
         train_losses.append(loss)
         train_accs.append(acc)
         train_times.append(wall_time)
+        if grad_flow is not None:
+            gradient_flows.append(grad_flow)
 
-        loss, acc, wall_time = evaluate(epoch, model, valid_dataloader,args)
+        loss, acc, wall_time = evaluate(epoch, model, valid_dataloader, args)
         valid_losses.append(loss)
         valid_accs.append(acc)
         valid_times.append(wall_time)
@@ -183,17 +197,17 @@ if __name__ == "__main__":
         print(f'Writing training logs to {args.logdir}...')
         os.makedirs(args.logdir, exist_ok=True)
         with open(os.path.join(args.logdir, 'results.json'), 'w') as f:
-            f.write(json.dumps(
-                {
-                    "train_losses": train_losses,
-                    "valid_losses": valid_losses,
-                    "train_accs": train_accs,
-                    "valid_accs": valid_accs,
-                    "test_loss": test_loss,
-                    "test_acc": test_acc
-                },
-                indent=4,
-            ))
+            results_dict = {
+                "train_losses": train_losses,
+                "valid_losses": valid_losses,
+                "train_accs": train_accs,
+                "valid_accs": valid_accs,
+                "test_loss": test_loss,
+                "test_acc": test_acc,
+                "gradient_flows": gradient_flows
+            }
+            
+            f.write(json.dumps(results_dict, indent=4))
     
         # Visualize
         if args.visualize and args.model in ['resnet18', 'mlpmixer']:

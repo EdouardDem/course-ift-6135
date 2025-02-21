@@ -22,6 +22,18 @@ def get_config_parser():
         default='./model_configs/mlp.json',
         help="Path to model config json file"
     )
+    model.add_argument(
+        "--mlp_ratio_tokens",
+        type=float,
+        default=0.5,
+        help="ratio for token mixing MLP dimension (default: %(default)s, MLPMixer only)."
+    )
+    model.add_argument(
+        "--mlp_ratio_channels",
+        type=float,
+        default=4.0,
+        help="ratio for channel mixing MLP dimension (default: %(default)s, MLPMixer only)."
+    )
 
     optimization = parser.add_argument_group("Optimization")
     optimization.add_argument(
