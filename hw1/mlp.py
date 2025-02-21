@@ -3,7 +3,7 @@ from typing import List, Tuple
 from torch import nn
 
 class Linear(nn.Module):
-    """Applies a linear transformation to the incoming data: :math:`y = xA^T + b`
+    r"""Applies a linear transformation to the incoming data: :math:`y = xA^T + b`
     Args:
         in_features: size of each input sample
         out_features: size of each output sample
