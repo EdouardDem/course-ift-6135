@@ -1,5 +1,7 @@
 #!/bin/bash
 
+START_TIME=$(date +%s)
+
 # Run all experiments
 # ./question-2.sh
 # ./question-3.sh
@@ -17,3 +19,7 @@
 # python question-6-plot.py
 # python question-7-plot.py
 python question-7-bis-plot.py
+
+END_TIME=$(date +%s)
+
+echo "Total execution time: $((END_TIME - START_TIME)) seconds"
