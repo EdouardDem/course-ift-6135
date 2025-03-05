@@ -151,6 +151,8 @@ class MLPMixer(nn.Module):
         n_filters = min(64, patch_weights.shape[0])
         filters = patch_weights[:n_filters]
         
+        # Faire une moyenne des poids pour avoir une image en niveaux de gris
+        filters = filters.mean(dim=1).unsqueeze(1)
         # Normaliser les poids pour la visualisation
         filters = (filters - filters.min()) / (filters.max() - filters.min())
         
