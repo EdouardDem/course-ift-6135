@@ -9,7 +9,7 @@ START_TIME=$(date +%s)
 # ./question-5.sh
 # ./question-6.sh
 # ./question-7.sh
-./question-7-bis.sh
+# ./question-7-bis.sh
 
 # Run all plots
 # python question-2-plot.py
@@ -18,7 +18,8 @@ START_TIME=$(date +%s)
 # python question-5-plot.py
 # python question-6-plot.py
 # python question-7-plot.py
-python question-7-bis-plot.py
+# python question-7-bis-plot.py
+./question-8-plot.sh
 
 END_TIME=$(date +%s)
 
