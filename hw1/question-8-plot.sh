@@ -15,3 +15,7 @@ python question-8.py logs/question-4/mlpmixer-4/results.json "MLPMixer Patch Siz
 python question-8.py logs/question-4/mlpmixer-8/results.json "MLPMixer Patch Size 8"
 python question-8.py logs/question-4/mlpmixer-16/results.json "MLPMixer Patch Size 16"
 
+python question-8.py logs/question-5/resnet18-momentum_0.0001_0.01/results.json "ResNet18 lr=0.0001 Momentum"
+python question-8.py logs/question-5/resnet18-adam_0.0001_0.01/results.json "ResNet18 lr=0.0001 Adam"
+python question-8.py logs/question-5/resnet18-adamw_0.0001_0.01/results.json "ResNet18 lr=0.0001 AdamW"
+python question-8.py logs/question-5/resnet18-sgd_0.0001_0.01/results.json "ResNet18 lr=0.0001 SGD"
