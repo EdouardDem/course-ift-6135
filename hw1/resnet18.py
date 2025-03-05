@@ -95,7 +95,15 @@ class ResNet18(nn.Module):
 
     def visualize(self, logdir: str) -> None:
         """ Visualize the kernel in the desired directory """
-        utils.save_image(self.conv1.weight, os.path.join(logdir, 'conv1.png'))
+        # Standardize the weights of the conv1 layer in order to have a grayscale image
+        conv1_weights = self.conv1.weight
+        utils.save_image(conv1_weights, os.path.join(logdir, 'conv1.png'))
+
+        conv1_weights = self.conv1.weight.mean(dim=1).unsqueeze(1)
+        utils.save_image(conv1_weights, os.path.join(logdir, 'conv1_mean.png'))
+
+        conv1_weights = (conv1_weights - conv1_weights.min()) / (conv1_weights.max() - conv1_weights.min())
+        utils.save_image(conv1_weights, os.path.join(logdir, 'conv1_std.png'))
     
     def get_gradient_flow(self) -> dict:
         gradients = {
