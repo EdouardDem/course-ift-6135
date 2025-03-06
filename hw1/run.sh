@@ -12,13 +12,13 @@ START_TIME=$(date +%s)
 # ./question-7-bis.sh
 
 # Run all plots
-# python question-2-plot.py
-# python question-3-plot.py
-# python question-4-plot.py
-# python question-5-plot.py
-# python question-6-plot.py
-# python question-7-plot.py
-# python question-7-bis-plot.py
+python question-2-plot.py
+python question-3-plot.py
+python question-4-plot.py
+python question-5-plot.py
+python question-6-plot.py
+python question-7-plot.py
+python question-7-bis-plot.py
 ./question-8-plot.sh
 
 END_TIME=$(date +%s)
