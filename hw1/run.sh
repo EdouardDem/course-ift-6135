@@ -5,11 +5,11 @@ START_TIME=$(date +%s)
 # Run all experiments
 # ./question-2.sh
 # ./question-3.sh
-# ./question-4.sh
+./question-4.sh
 # ./question-5.sh
-# ./question-6.sh
+./question-6.sh
 # ./question-7.sh
-# ./question-7-bis.sh
+./question-7-bis.sh
 
 # Run all plots
 python question-2-plot.py

@@ -20,6 +20,8 @@ from torch.utils.data import DataLoader
 import time
 import os
 
+fix_datasplit = False
+
 def train(epoch, model, dataloader, optimizer, args):
     model.train()
     total_iters = 0
@@ -110,10 +112,16 @@ if __name__ == "__main__":
                                         ])
     # Loading the training dataset. We need to split it into a training and validation part
     # We need to do a little trick because the validation set should not use the augmentation.
-    train_dataset = CIFAR10(root='./data', train=True, transform=train_transform, download=True)
-    val_dataset = CIFAR10(root='./data', train=True, transform=test_transform, download=True)
-    train_set, _ = torch.utils.data.random_split(train_dataset, [45000, 5000])
-    _, val_set = torch.utils.data.random_split(val_dataset, [45000, 5000])
+    if fix_datasplit:
+        dataset = CIFAR10(root='./data', train=True, download=True)
+        train_set, val_set = torch.utils.data.random_split(dataset, [45000, 5000])
+        train_set.dataset.transform = train_transform
+        val_set.dataset.transform = test_transform
+    else:
+        train_dataset = CIFAR10(root='./data', train=True, transform=train_transform, download=True)
+        val_dataset = CIFAR10(root='./data', train=True, transform=test_transform, download=True)
+        train_set, _ = torch.utils.data.random_split(train_dataset, [45000, 5000])
+        _, val_set = torch.utils.data.random_split(val_dataset, [45000, 5000])
 
     # Loading the test set
     test_set = CIFAR10(root='./data', train=False, transform=test_transform, download=True)
