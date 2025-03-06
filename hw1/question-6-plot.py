@@ -23,7 +23,7 @@ def load_results(logdir):
     with open(os.path.join(logdir, 'results.json'), 'r') as f:
         return json.load(f)
 
-def create_embed_dim_plot(embed_dim, metric='valid_accs'):
+def create_embed_dim_plot(embed_dim, metric='valid_accs', epochs=epochs):
     """Create plot for a specific embed_dim showing all num_blocks and drop_rate combinations"""
     plt.figure(figsize=(12, 8))
     
@@ -39,10 +39,10 @@ def create_embed_dim_plot(embed_dim, metric='valid_accs'):
             exp_name = f"mlpmixer_e{embed_dim}_b{blocks}_d{str(drop_rate).replace('.', '')}_{epochs}epochs"
             try:
                 results = load_results(os.path.join(base_dir, exp_name))
-                epochs = range(1, len(results[metric]) + 1)
+                epochs_range = range(1, len(results[metric]) + 1)
                 
                 label = f"blocks={blocks}, drop={drop_rate}"
-                plt.plot(epochs, results[metric], color=color, label=label, linewidth=2)
+                plt.plot(epochs_range, results[metric], color=color, label=label, linewidth=2)
             except FileNotFoundError:
                 print(f"Warning: No results found for {exp_name}")
                 continue
