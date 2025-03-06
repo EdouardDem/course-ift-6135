@@ -51,7 +51,7 @@ class Mlp(nn.Module):
             self,
             in_features,
             hidden_features,
-            act_layer=gelu,
+            act_layer=nn.GELU,
             drop=0.,
     ):
         super(Mlp, self).__init__()
@@ -59,7 +59,7 @@ class Mlp(nn.Module):
         hidden_features = hidden_features
 
         self.fc1 = nn.Linear(in_features, hidden_features, bias=True)
-        self.act = act_layer
+        self.act = act_layer()
         self.drop1 = nn.Dropout(drop)
         self.fc2 = nn.Linear(hidden_features, out_features, bias=True)
         self.drop2 = nn.Dropout(drop)
@@ -81,7 +81,7 @@ class MixerBlock(nn.Module):
             self, dim, seq_len, mlp_ratio=(0.5, 4.0),
             activation='gelu', drop=0., drop_path=0.):
         super(MixerBlock, self).__init__()
-        act_layer = {'gelu': gelu, 'relu': relu}[activation]
+        act_layer = {'gelu': nn.GELU, 'relu': nn.ReLU}[activation]
         tokens_dim, channels_dim = int(mlp_ratio[0] * dim), int(mlp_ratio[1] * dim)
         self.norm1 = nn.LayerNorm(dim, eps=1e-6) # norm1 used with mlp_tokens
         self.mlp_tokens = Mlp(seq_len, tokens_dim, act_layer=act_layer, drop=drop)
@@ -94,8 +94,9 @@ class MixerBlock(nn.Module):
         p1 = p1.transpose(1, 2)
         p1 = self.mlp_tokens(p1)
         p1 = p1.transpose(1, 2)
+        p1 = p1 + x
 
-        p2 = self.norm2(p1 + x)
+        p2 = self.norm2(p1)
         p2 = self.mlp_channels(p2)
         
         return p1 + p2
