@@ -10,6 +10,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import utils
 
+def relu(inputs: torch.Tensor) -> torch.Tensor:
+    return inputs * (inputs > 0)
 
 class BasicBlock(nn.Module):
     
@@ -45,13 +47,13 @@ class BasicBlock(nn.Module):
         # 1. Go through conv1, bn1, relu
         p1 = self.conv1(x)
         p1 = self.bn1(p1)
-        p1 = nn.ReLU()(p1)
+        p1 = relu(p1)
         # 2. Go through conv2, bn2
         p2 = self.conv2(p1)
         p2 = self.bn2(p2)
         # 3. Combine with shortcut output, and go through relu
         p3 = p2 + self.shortcut(x)
-        p3 = nn.ReLU()(p3)
+        p3 = relu(p3)
 
         return p3
 
@@ -84,7 +86,7 @@ class ResNet18(nn.Module):
         """ input images and output logits """
         x = self.conv1(images)
         x = self.bn1(x)
-        x = nn.ReLU()(x)
+        x = relu(x)
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)

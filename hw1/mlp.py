@@ -2,6 +2,17 @@ import torch
 from typing import List, Tuple
 from torch import nn
 
+def relu(inputs: torch.Tensor) -> torch.Tensor:
+    return inputs * (inputs > 0)
+
+def tanh(inputs: torch.Tensor) -> torch.Tensor:
+    e = torch.exp(inputs)
+    me = torch.exp(-inputs)
+    return (e - me) / (e + me)
+
+def sigmoid(inputs: torch.Tensor) -> torch.Tensor:
+    return 1 / (1 + torch.exp(-inputs))
+
 class Linear(nn.Module):
     r"""Applies a linear transformation to the incoming data: :math:`y = xA^T + b`
     Args:
@@ -90,24 +101,13 @@ class MLP(torch.nn.Module):
     def activation_fn(self, activation, inputs: torch.Tensor) -> torch.Tensor:
         """ process the inputs through different non-linearity function according to activation name """
         if activation == 'relu':
-            return self._relu(inputs)
+            return relu(inputs)
         elif activation == 'tanh':
-            return self._tanh(inputs)
+            return tanh(inputs)
         elif activation == 'sigmoid':
-            return self._sigmoid(inputs)
+            return sigmoid(inputs)
         else:
             raise ValueError(f"Invalid activation function: {activation}")
-        
-    def _relu(self, inputs: torch.Tensor) -> torch.Tensor:
-        return inputs * (inputs > 0)
-    
-    def _tanh(self, inputs: torch.Tensor) -> torch.Tensor:
-        e = torch.exp(inputs)
-        me = torch.exp(-inputs)
-        return (e - me) / (e + me)
-    
-    def _sigmoid(self, inputs: torch.Tensor) -> torch.Tensor:
-        return 1 / (1 + torch.exp(-inputs))
         
     def _initialize_linear_layer(self, module: nn.Linear) -> None:
         # Glorot normal initialization for weights

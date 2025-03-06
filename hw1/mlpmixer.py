@@ -5,6 +5,11 @@ import matplotlib.pyplot as plt
 import os
 from torchvision import utils
 
+def relu(inputs: torch.Tensor) -> torch.Tensor:
+    return inputs * (inputs > 0)
+
+def gelu(inputs: torch.Tensor) -> torch.Tensor:
+    return inputs * torch.erf(inputs / math.sqrt(2))
 
 class PatchEmbed(nn.Module):
     """ 2D Image to Patch Embedding
@@ -46,7 +51,7 @@ class Mlp(nn.Module):
             self,
             in_features,
             hidden_features,
-            act_layer=nn.GELU,
+            act_layer=gelu,
             drop=0.,
     ):
         super(Mlp, self).__init__()
@@ -54,7 +59,7 @@ class Mlp(nn.Module):
         hidden_features = hidden_features
 
         self.fc1 = nn.Linear(in_features, hidden_features, bias=True)
-        self.act = act_layer()
+        self.act = act_layer
         self.drop1 = nn.Dropout(drop)
         self.fc2 = nn.Linear(hidden_features, out_features, bias=True)
         self.drop2 = nn.Dropout(drop)
@@ -76,7 +81,7 @@ class MixerBlock(nn.Module):
             self, dim, seq_len, mlp_ratio=(0.5, 4.0),
             activation='gelu', drop=0., drop_path=0.):
         super(MixerBlock, self).__init__()
-        act_layer = {'gelu': nn.GELU, 'relu': nn.ReLU}[activation]
+        act_layer = {'gelu': gelu, 'relu': relu}[activation]
         tokens_dim, channels_dim = int(mlp_ratio[0] * dim), int(mlp_ratio[1] * dim)
         self.norm1 = nn.LayerNorm(dim, eps=1e-6) # norm1 used with mlp_tokens
         self.mlp_tokens = Mlp(seq_len, tokens_dim, act_layer=act_layer, drop=drop)
