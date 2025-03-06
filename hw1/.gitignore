@@ -3,3 +3,4 @@ exps
 __pycache__/
 data/
 !logs/**/*.png
+gradient_flow.png
