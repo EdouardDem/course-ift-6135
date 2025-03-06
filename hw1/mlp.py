@@ -90,13 +90,24 @@ class MLP(torch.nn.Module):
     def activation_fn(self, activation, inputs: torch.Tensor) -> torch.Tensor:
         """ process the inputs through different non-linearity function according to activation name """
         if activation == 'relu':
-            return torch.relu(inputs)
+            return self._relu(inputs)
         elif activation == 'tanh':
-            return torch.tanh(inputs)
+            return self._tanh(inputs)
         elif activation == 'sigmoid':
-            return torch.sigmoid(inputs)
+            return self._sigmoid(inputs)
         else:
             raise ValueError(f"Invalid activation function: {activation}")
+        
+    def _relu(self, inputs: torch.Tensor) -> torch.Tensor:
+        return inputs * (inputs > 0)
+    
+    def _tanh(self, inputs: torch.Tensor) -> torch.Tensor:
+        e = torch.exp(inputs)
+        me = torch.exp(-inputs)
+        return (e - me) / (e + me)
+    
+    def _sigmoid(self, inputs: torch.Tensor) -> torch.Tensor:
+        return 1 / (1 + torch.exp(-inputs))
         
     def _initialize_linear_layer(self, module: nn.Linear) -> None:
         # Glorot normal initialization for weights
