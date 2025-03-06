@@ -3,9 +3,10 @@
 set -e
 
 # Définir les valeurs pour la grid search
-embed_dims=(256 512 1024)
+embed_dims=(256 512)
 num_blocks=(2 4 6)
-drop_rates=(0.0 0.3 0.5)
+drop_rates=(0.0 0.5)
+epochs=30
 
 function generate_config() {
     # Paramètres pour le fichier de config
@@ -37,7 +38,7 @@ function run_experiment() {
     local drop_rate=$3
     
     # Créer un nom unique pour l'expérience
-    local exp_name="mlpmixer_e${embed_dim}_b${num_blocks}_d${drop_rate//.}"
+    local exp_name="mlpmixer_e${embed_dim}_b${num_blocks}_d${drop_rate//.}_${epochs}epochs"
     local config_path="./model_configs/question-6/${exp_name}.json"
     local logdir="./logs/question-6/${exp_name}"    
 
@@ -57,7 +58,7 @@ function run_experiment() {
         --model mlpmixer \
         --model_config $config_path \
         --visualize \
-        --epochs 40 \
+        --epochs $epochs \
         --logdir "$logdir"
 }
 

@@ -6,9 +6,10 @@ import numpy as np
 
 # Configuration
 base_dir = "logs/question-6"
-embed_dims = [256, 512, 1024]
+embed_dims = [256, 512]
 num_blocks = [2, 4, 6]
-drop_rates = [0.0, 0.3, 0.5]
+drop_rates = [0.0, 0.5]
+epochs = 30
 
 # Définir une palette de couleurs distincte pour chaque num_blocks
 block_colors = {
@@ -35,7 +36,7 @@ def create_embed_dim_plot(embed_dim, metric='valid_accs'):
         
         # Pour chaque drop rate
         for drop_rate, color in zip(drop_rates, color_palette):
-            exp_name = f"mlpmixer_e{embed_dim}_b{blocks}_d{str(drop_rate).replace('.', '')}"
+            exp_name = f"mlpmixer_e{embed_dim}_b{blocks}_d{str(drop_rate).replace('.', '')}_{epochs}epochs"
             try:
                 results = load_results(os.path.join(base_dir, exp_name))
                 epochs = range(1, len(results[metric]) + 1)
@@ -145,4 +146,4 @@ if __name__ == "__main__":
     create_metrics_plot_epochs(120, 1024, 4, "00")
     create_metrics_plot_epochs(120, 1024, 4, "03")
     create_metrics_plot_epochs(120, 1024, 6, "00")
-    create_metrics_plot_epochs(120, 1024, 6, "03")
+    # create_metrics_plot_epochs(120, 1024, 6, "03")
