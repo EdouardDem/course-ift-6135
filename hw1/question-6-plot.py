@@ -76,7 +76,7 @@ def generate_embed_dim_plots():
         
         print(f"Generated plots for {metric}")
 
-def create_metrics_plot_epochs(epochs_num):
+def create_metrics_plot_epochs(epochs_num, embed_dim=512, num_blocks=4, drop_rate="00"):
     """Create a plot showing all metrics for the specified epochs experiment
     Args:
         epochs_num: int, number of epochs (50 or 100)
@@ -84,7 +84,7 @@ def create_metrics_plot_epochs(epochs_num):
     plt.figure(figsize=(12, 8))
     
     # Charger les résultats
-    exp_name = f"mlpmixer_e512_b4_d00_{epochs_num}epochs"
+    exp_name = f"mlpmixer_e{embed_dim}_b{num_blocks}_d{drop_rate}_{epochs_num}epochs"
     try:
         results = load_results(os.path.join(base_dir, exp_name))
         epochs = range(1, len(results['train_losses']) + 1)
@@ -104,6 +104,7 @@ def create_metrics_plot_epochs(epochs_num):
         l3 = ax2.plot(epochs, results['train_accs'], 'r-', label='Train Acc', linewidth=2)
         l4 = ax2.plot(epochs, results['valid_accs'], 'r--', label='Valid Acc', linewidth=2)
         ax2.set_ylabel('Accuracy', color='r')
+        ax2.set_ylim(0, 1)
         ax2.tick_params(axis='y', labelcolor='r')
         
         # Ajouter le titre
@@ -121,7 +122,7 @@ def create_metrics_plot_epochs(epochs_num):
         # Sauvegarder le graphique
         save_dir = "plots/question-6"
         os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, f'mlpmixer_{epochs_num}epochs_metrics.png')
+        save_path = os.path.join(save_dir, f'mlpmixer_{embed_dim}_{num_blocks}_{drop_rate}_{epochs_num}epochs_metrics.png')
         fig.savefig(save_path, bbox_inches='tight', dpi=300)
         plt.close(fig)
         
@@ -132,8 +133,16 @@ def create_metrics_plot_epochs(epochs_num):
 
 if __name__ == "__main__":
     # Set style
+    # Set style
     sns.set_style("whitegrid")
     generate_embed_dim_plots()
     # Générer les graphiques pour 50 et 100 époques
-    create_metrics_plot_epochs(50)
-    create_metrics_plot_epochs(100) 
+    create_metrics_plot_epochs(50, 512, 4, "00")
+    create_metrics_plot_epochs(100, 512, 4, "00")
+
+    create_metrics_plot_epochs(120, 1024, 2, "00")
+    create_metrics_plot_epochs(120, 1024, 2, "03")
+    create_metrics_plot_epochs(120, 1024, 4, "00")
+    create_metrics_plot_epochs(120, 1024, 4, "03")
+    create_metrics_plot_epochs(120, 1024, 6, "00")
+    create_metrics_plot_epochs(120, 1024, 6, "03")
