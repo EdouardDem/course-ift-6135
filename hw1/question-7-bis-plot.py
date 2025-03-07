@@ -8,14 +8,14 @@ log_dirs = [
     os.path.join(base_dir, "mlpmixer-e128"),
     os.path.join(base_dir, "mlpmixer-e256"),
     os.path.join(base_dir, "mlpmixer-e512"),
-    os.path.join(base_dir, "mlpmixer-e1024")
+    # os.path.join(base_dir, "mlpmixer-e1024")
 ]
 
 legend_names = [
     "embed_dim=128",
     "embed_dim=256",
     "embed_dim=512",
-    "embed_dim=1024"
+    # "embed_dim=1024"
 ]
 
 def load_results(logdir):

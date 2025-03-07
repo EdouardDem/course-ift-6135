@@ -9,4 +9,4 @@ function run_experiment() {
 run_experiment mlpmixer-e128
 run_experiment mlpmixer-e256
 run_experiment mlpmixer-e512
-run_experiment mlpmixer-e1024
+# run_experiment mlpmixer-e1024
