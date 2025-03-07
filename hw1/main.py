@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 import time
 import os
 
-fix_datasplit = False
+fix_datasplit = True
 
 def train(epoch, model, dataloader, optimizer, args):
     model.train()
