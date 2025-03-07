@@ -8,13 +8,19 @@ log_dirs = [
     os.path.join(base_dir, "mlpmixer-e128"),
     os.path.join(base_dir, "mlpmixer-e256"),
     os.path.join(base_dir, "mlpmixer-e512"),
+    os.path.join(base_dir, "mlpmixer-e128-d05"),
+    os.path.join(base_dir, "mlpmixer-e256-d05"),
+    os.path.join(base_dir, "mlpmixer-e512-d05"),
     # os.path.join(base_dir, "mlpmixer-e1024")
 ]
 
 legend_names = [
-    "embed_dim=128",
-    "embed_dim=256",
-    "embed_dim=512",
+    "embed_dim=128, dropout=0.0",
+    "embed_dim=256, dropout=0.0",
+    "embed_dim=512, dropout=0.0",
+    "embed_dim=128, dropout=0.5",
+    "embed_dim=256, dropout=0.5",
+    "embed_dim=512, dropout=0.5",
     # "embed_dim=1024"
 ]
 
@@ -34,11 +40,12 @@ def generate_patch_size_plots():
     print(f"All plots have been saved in {save_dir}")
 
 
-def create_metrics_plot_epochs(embed_dim=512):
+def create_metrics_plot_epochs(embed_dim=512, dropout=None):
     plt.figure(figsize=(12, 8))
     
     # Charger les résultats
-    exp_name = f"mlpmixer-e{embed_dim}"
+    dropout_str = f"{dropout}".replace(".", "") if dropout is not None else "00"
+    exp_name = f"mlpmixer-e{embed_dim}" if dropout is None else f"mlpmixer-e{embed_dim}-d{dropout_str}"
     try:
         results = load_results(os.path.join(base_dir, exp_name))
         epochs = range(1, len(results['train_losses']) + 1)
@@ -62,7 +69,7 @@ def create_metrics_plot_epochs(embed_dim=512):
         ax2.tick_params(axis='y', labelcolor='r')
         
         # Ajouter le titre
-        plt.title(f'MLPMixer Training Metrics (embed_dim={embed_dim}, blocks=4, dropout=0.0, patch_size=4)')
+        plt.title(f'MLPMixer Training Metrics (embed_dim={embed_dim}, blocks=4, dropout={dropout if dropout is not None else 0.0}, patch_size=4)')
         
         # Combiner les légendes des deux axes
         lns = l1 + l2 + l3 + l4
@@ -76,7 +83,7 @@ def create_metrics_plot_epochs(embed_dim=512):
         # Sauvegarder le graphique
         save_dir = "plots/question-7-bis"
         os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, f'mlpmixer_{embed_dim}_metrics.png')
+        save_path = os.path.join(save_dir, f'mlpmixer_e{embed_dim}_d{dropout_str}_metrics.png')
         fig.savefig(save_path, bbox_inches='tight', dpi=300)
         plt.close(fig)
         
@@ -91,3 +98,6 @@ if __name__ == "__main__":
     create_metrics_plot_epochs(256)
     create_metrics_plot_epochs(512)
     # create_metrics_plot_epochs(1024)
+    create_metrics_plot_epochs(128, 0.5)
+    create_metrics_plot_epochs(256, 0.5)
+    create_metrics_plot_epochs(512, 0.5)
