@@ -3,6 +3,7 @@ Basic Usage:
 python main.py --model <model_name> --model_config <path_to_json> --logdir <result_dir> ...
 Please see config.py for other command line usage.
 """
+import copy
 import warnings
 
 import torch
@@ -21,6 +22,7 @@ import time
 import os
 
 fix_datasplit = True
+verbose_datasplit = False
 
 def train(epoch, model, dataloader, optimizer, args):
     model.train()
@@ -115,6 +117,8 @@ if __name__ == "__main__":
     if fix_datasplit:
         dataset = CIFAR10(root='./data', train=True, download=True)
         train_set, val_set = torch.utils.data.random_split(dataset, [45000, 5000])
+        # Clone val_set, otherwise the reference to dataset is the same for train_set and val_set
+        val_set = copy.deepcopy(val_set)
         train_set.dataset.transform = train_transform
         val_set.dataset.transform = test_transform
     else:
@@ -123,6 +127,16 @@ if __name__ == "__main__":
         train_set, _ = torch.utils.data.random_split(train_dataset, [45000, 5000])
         _, val_set = torch.utils.data.random_split(val_dataset, [45000, 5000])
 
+    if verbose_datasplit:
+        # Display metrics of the training set
+        print(f"Training set size: {len(train_set)}")
+        print(f"Validation set size: {len(val_set)}")
+        # Print transform of the training set
+        print(f"Training set transform: {train_set.dataset.transform}")
+        print(f"Validation set transform: {val_set.dataset.transform}")
+        # Print overlap between training and validation set
+        print(f"Overlap between training and validation set: {len(set(train_set.indices) & set(val_set.indices))}")
+    
     # Loading the test set
     test_set = CIFAR10(root='./data', train=False, transform=test_transform, download=True)
     

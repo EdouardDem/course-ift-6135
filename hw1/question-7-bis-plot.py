@@ -87,7 +87,7 @@ def create_metrics_plot_epochs(embed_dim=512):
 
 if __name__ == "__main__":
     generate_patch_size_plots() 
-    create_metrics_plot_epochs(512)
-    create_metrics_plot_epochs(256)
     create_metrics_plot_epochs(128)
+    create_metrics_plot_epochs(256)
+    create_metrics_plot_epochs(512)
     # create_metrics_plot_epochs(1024)
