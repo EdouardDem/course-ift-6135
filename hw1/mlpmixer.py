@@ -148,26 +148,45 @@ class MLPMixer(nn.Module):
         x = self.head(x)
         return x
     
+    # def visualize(self, logdir: str) -> None:
+    #     """Visualize the first layer weights in the desired directory"""
+    #     # Récupérer les poids du patch embedding
+    #     patch_weights = self.patchemb.proj.weight  # Shape: [embed_dim, channels, patch_size, patch_size]
+        
+    #     # Prendre les 64 premiers filtres
+    #     n_filters = min(64, patch_weights.shape[0])
+    #     filters = patch_weights[:n_filters]
+        
+    #     # Faire une moyenne des poids pour avoir une image en niveaux de gris
+    #     filters = filters.mean(dim=1).unsqueeze(1)
+    #     # Normaliser les poids pour la visualisation
+    #     filters = (filters - filters.min()) / (filters.max() - filters.min())
+        
+    #     # Sauvegarder l'image
+    #     utils.save_image(filters, os.path.join(logdir, 'patch_embed.png'),
+    #                     nrow=8,  # 8 images par ligne
+    #                     padding=2)  # Espacement entre les images
+
     def visualize(self, logdir: str) -> None:
         """Visualize the first layer weights in the desired directory"""
-        # Récupérer les poids du patch embedding
-        patch_weights = self.patchemb.proj.weight  # Shape: [embed_dim, channels, patch_size, patch_size]
-        
-        # Prendre les 64 premiers filtres
-        n_filters = min(64, patch_weights.shape[0])
-        filters = patch_weights[:n_filters]
-        
-        # Faire une moyenne des poids pour avoir une image en niveaux de gris
-        filters = filters.mean(dim=1).unsqueeze(1)
-        # Normaliser les poids pour la visualisation
-        filters = (filters - filters.min()) / (filters.max() - filters.min())
-        
+        # Display the weights of the fc1 of the token-mixer of the first mixer block
+        weights = self.blocks[0].mlp_tokens.fc1.weight
+        # Print the shape of the weights
+        print("Before reshape:", weights.shape)
+        # Normalize the weights
+        weights = (weights - weights.min()) / (weights.max() - weights.min())
+        # Get the size of the weights
+        img_size = int(math.sqrt(weights.shape[1]))
+        # Reshape the weights lines to be a square image
+        weights = weights.reshape(weights.shape[0], img_size, img_size).unsqueeze(1)
+        # Print the shape of the weights
+        print("After reshape:", weights.shape)
         # Sauvegarder l'image
-        utils.save_image(filters, os.path.join(logdir, 'patch_embed.png'),
+        utils.save_image(weights, os.path.join(logdir, 'mlp_tokens_fc1.png'),
                         nrow=8,  # 8 images par ligne
                         padding=2)  # Espacement entre les images
- 
 
+ 
     def get_gradient_flow(self) -> dict:
         gradients = {
             'hidden_layers': [],
