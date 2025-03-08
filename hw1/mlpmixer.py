@@ -172,7 +172,7 @@ class MLPMixer(nn.Module):
         # Display the weights of the fc1 of the token-mixer of the first mixer block
         weights = self.blocks[0].mlp_tokens.fc1.weight
         # Print the shape of the weights
-        print("Before reshape:", weights.shape)
+        # print("Before reshape:", weights.shape)
         # Normalize the weights
         weights = (weights - weights.min()) / (weights.max() - weights.min())
         # Get the size of the weights
@@ -180,7 +180,7 @@ class MLPMixer(nn.Module):
         # Reshape the weights lines to be a square image
         weights = weights.reshape(weights.shape[0], img_size, img_size).unsqueeze(1)
         # Print the shape of the weights
-        print("After reshape:", weights.shape)
+        # print("After reshape:", weights.shape)
         # Sauvegarder l'image
         utils.save_image(weights, os.path.join(logdir, 'mlp_tokens_fc1.png'),
                         nrow=8,  # 8 images par ligne
