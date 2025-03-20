@@ -59,8 +59,13 @@ class LSTMCell(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-
-        raise NotImplementedError
+        i = torch.sigmoid(self.input_gate(combined))
+        f = torch.sigmoid(self.forget_gate(combined))
+        o = torch.sigmoid(self.output_gate(combined))
+        c_tilda = torch.tanh(self.candidate_cell(combined))
+        c = f * c + i * c_tilda
+        h = o * torch.tanh(c)
+        return h, c
 
 ########################################################################################
 ########################################################################################
