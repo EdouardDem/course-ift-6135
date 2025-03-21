@@ -116,8 +116,6 @@ class LSTM(nn.Module):
             h_n (torch.Tensor): Final hidden states (num_layers, batch_size, hidden_size).
             c_n (torch.Tensor): Final cell states (num_layers, batch_size, hidden_size).
         """
-        raise NotImplementedError
-
         batch_size, seq_len, _ = x.size() 
         
         # Initialize hidden and cell states if not provided.
@@ -125,7 +123,8 @@ class LSTM(nn.Module):
             # ==========================
             # TODO: Write your code here
             # ==========================
-            raise NotImplementedError
+            h0 = torch.zeros(self.num_layers, batch_size, self.hidden_size)
+            c0 = torch.zeros(self.num_layers, batch_size, self.hidden_size)
         else:
             h0, c0 = hx  # (num_layers, batch_size, hidden_size), (num_layers, batch_size, hidden_size)
 
@@ -146,8 +145,8 @@ class LSTM(nn.Module):
                 # ==========================
                 # Extract x_t from "output" tensor, and compute h_t, c_t using the LSTM "cell" based on x_t, h_t, and c_t
 
-                x_t = None  # (batch_size, input_size) if layer_idx == 0, (batch_size, hidden_size) otherwise
-                h_t, c_t = None, None  # (batch_size, hidden_size), (batch_size, hidden_size)
+                x_t = output[:, t, :]  # (batch_size, input_size) if layer_idx == 0, (batch_size, hidden_size) otherwise
+                h_t, c_t = cell(x_t, (h_t, c_t))  # (batch_size, hidden_size), (batch_size, hidden_size)
 
                 layer_outputs.append(h_t.unsqueeze(1))  # (batch_size, 1, hidden_size)
             
@@ -235,8 +234,10 @@ class LSTMLM(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-
-        raise NotImplementedError
+        x = self.embedding(x)
+        output, (h, c) = self.lstm(x, hidden_states)
+        logits = self.classifier(output)
+        return logits, (h, c)
 
 ########################################################################################
 ########################################################################################
