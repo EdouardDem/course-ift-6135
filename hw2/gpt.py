@@ -490,8 +490,13 @@ class GPTEmbedding(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-
-        raise NotImplementedError
+        is_even = torch.arange(dimension) % 2 == 0
+        is_odd = torch.arange(dimension) % 2 == 1
+        # Compute positional encodings
+        pos_enc = torch.zeros(n_positions, dimension)
+        pos_enc[:, is_even] = torch.sin(torch.arange(n_positions) / (10000 ** ((is_even // 2) / dimension)))
+        pos_enc[:, is_odd] = torch.cos(torch.arange(n_positions) / (10000 ** ((is_odd // 2) / dimension)))
+        return pos_enc
 
 
     def forward(self, tokens: Tensor) -> Tensor:
@@ -515,8 +520,10 @@ class GPTEmbedding(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        
-        raise NotImplementedError
+        embeddings = self.tokens(tokens)
+        position_encoding = self.buffer("position_encoding")
+        embeddings = embeddings + position_encoding[:tokens.shape[1], :]
+        return embeddings
 
 ########################################################################################
 ########################################################################################
@@ -584,7 +591,10 @@ class GPT(nn.Module):
                 (batch_size, num_layers, num_heads, sequence_length, sequence_length)
         """
 
-        raise NotImplementedError
+        embeddings = self.embedding(x)
+        outputs, attn_weights = self.decoder(embeddings)
+        logits = self.classifier(outputs)
+        return logits, (outputs, attn_weights)
 
 ########################################################################################
 ########################################################################################
