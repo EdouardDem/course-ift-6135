@@ -52,10 +52,42 @@ def get_loss_and_accuracy(logits, targets, eq_positions, mask, reduction='mean')
     # ==========================
     # TODO: Write your code here
     # ==========================
+    sequence_length = logits.shape[1]
 
-    raise NotImplementedError
+    # Compute the mask for the RHS tokens (non-PAD AND (position > eq_position))
+    tokens_mask = mask.unsqueeze(2)
+    eq_mask = torch.arange(sequence_length).unsqueeze(0) > eq_positions.unsqueeze(1)
+    rhs_mask = tokens_mask & eq_mask
 
+    # Count the number of valid tokens by batch
+    rhs_count = rhs_mask.sum(dim=1)
+
+    # Compute probabilities from logits
+    log_probs = F.log_softmax(logits, dim=2)
+    masked_log_probs = log_probs[rhs_mask]
+
+    # Compute the loss
+    pre_loss = - masked_log_probs.sum(dim=(2, 1)) / rhs_count
+
+    if reduction == 'mean':
+        loss = pre_loss.mean()
+    elif reduction == 'sum':
+        loss = pre_loss.sum()
+    elif reduction == 'none':
+        loss = pre_loss
+        
+    # Compute the accuracy. 
+    pre_accuracy = (logits[rhs_mask].argmax(dim=2) == targets[rhs_mask]).prod(dim=1)
+
+    if reduction == 'mean' or reduction == 'sum':
+        accuracy = pre_accuracy.mean()
+    elif reduction == 'sum':
+        accuracy = pre_accuracy.sum()
+    elif reduction == 'none':
+        accuracy = pre_accuracy
+    
     return loss, accuracy
+
 
 ########################################################################################
 ########################################################################################
