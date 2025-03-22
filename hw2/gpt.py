@@ -48,8 +48,13 @@ class LayerNorm(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        
-        raise NotImplementedError
+
+        # Compute mean
+        mean = inputs.mean(dim=-1, keepdim=True)
+        # Compute biased variance
+        var_biased = inputs.var(dim=-1, keepdim=True, unbiased=False)
+        # Compute normalized inputs
+        return self.weight * ((inputs - mean) / math.sqrt(var_biased + self.eps)) + self.bias
 
     def reset_parameters(self):
         nn.init.ones_(self.weight)
@@ -117,8 +122,16 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-
-        raise NotImplementedError
+        # Compute attention weights
+        weights = torch.matmul(queries, keys.transpose(-2, -1)) / math.sqrt(self.head_size)
+        # Apply causal mask
+        sequence_length = weights.shape[-1]
+        ones = torch.ones(sequence_length, sequence_length)
+        mask = torch.tril(ones, diagonal=0).bool()
+        weights = weights.masked_fill(mask == 0, float('-inf'))
+        # Apply softmax
+        weights = F.softmax(weights, dim=-1)
+        return weights
 
     def apply_attention(self, queries, keys, values):
         """
@@ -179,8 +192,14 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
+        # Compute attention weights
+        weights = self.get_attention_weights(queries, keys)
+        # Apply attention
+        attended_values = weights * values
+        # Merge heads
+        outputs = self.merge_heads(attended_values)
 
-        raise NotImplementedError
+        return outputs, weights
 
 
     def split_heads(self, tensor):
@@ -207,8 +226,10 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-
-        raise NotImplementedError
+        # Compute dim
+        dim = tensor.shape[-1] / self.num_heads
+        # Split heads
+        return tensor.view(batch_size, self.num_heads, sequence_length, dim)
 
     def merge_heads(self, tensor):
         """
@@ -235,8 +256,9 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        
-        raise NotImplementedError
+        dim = tensor.shape[-1]
+        # Merge heads
+        return tensor.view(batch_size, sequence_length, dim * self.num_heads)
 
     def forward(self,  queries: Tensor, keys: Tensor, values: Tensor):
         """
@@ -295,11 +317,19 @@ class MultiHeadedAttention(nn.Module):
         # TODO: Write your code here
         # ==========================
         
-        raise NotImplementedError
-
         # Use clone().detach() to detach attn_weights from the computation graph
         # Since we don't need to backpropagate through them, we can detach them from the graph
-        
+
+        # Compute queries, keys, values
+        queries = self.W_Q(queries)
+        keys = self.W_K(keys)
+        values = self.W_V(values)
+        # Apply attention
+        outputs, attn_weights = self.apply_attention(queries, keys, values)
+        # Apply output projection
+        outputs = self.W_O(outputs)
+
+        return outputs, attn_weights.clone().detach()
 
 ########################################################################################
 ########################################################################################
