@@ -10,6 +10,6 @@ dependencies:
   - jupyter
   - ipywidgets
   - tqdm
-  # - pip:
-  #   - torch
-  #   - torchvision
+  - pip:
+    - torch
+    - torchvision

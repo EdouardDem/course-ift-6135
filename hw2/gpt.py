@@ -50,11 +50,16 @@ class LayerNorm(nn.Module):
         # ==========================
 
         # Compute mean
+        print("[forward] inputs.shape", inputs.shape)   
         mean = inputs.mean(dim=-1, keepdim=True)
+        print("[forward] mean.shape", mean.shape)
         # Compute biased variance
         var_biased = inputs.var(dim=-1, keepdim=True, unbiased=False)
+        print("[forward] var_biased.shape", var_biased.shape)
         # Compute normalized inputs
-        return self.weight * ((inputs - mean) / math.sqrt(var_biased + self.eps)) + self.bias
+        normalized_inputs = (inputs - mean) / math.sqrt(var_biased + self.eps)
+        print("[forward] normalized_inputs.shape", normalized_inputs.shape)
+        return self.weight * normalized_inputs + self.bias
 
     def reset_parameters(self):
         nn.init.ones_(self.weight)
@@ -123,6 +128,8 @@ class MultiHeadedAttention(nn.Module):
         # TODO: Write your code here
         # ==========================
         # Compute attention weights
+        print("[get_attention_weights] queries.shape", queries.shape)
+        print("[get_attention_weights] keys.shape", keys.shape)
         weights = torch.matmul(queries, keys.transpose(-2, -1)) / math.sqrt(self.head_size)
         # Apply causal mask
         sequence_length = weights.shape[-1]
@@ -131,6 +138,7 @@ class MultiHeadedAttention(nn.Module):
         weights = weights.masked_fill(mask == 0, float('-inf'))
         # Apply softmax
         weights = F.softmax(weights, dim=-1)
+        print("[get_attention_weights] weights.shape", weights.shape)
         return weights
 
     def apply_attention(self, queries, keys, values):
@@ -193,11 +201,17 @@ class MultiHeadedAttention(nn.Module):
         # TODO: Write your code here
         # ==========================
         # Compute attention weights
+        print("[apply_attention] queries.shape", queries.shape)
+        print("[apply_attention] keys.shape", keys.shape)
+        print("[apply_attention] values.shape", values.shape)
         weights = self.get_attention_weights(queries, keys)
+        print("[apply_attention] weights.shape", weights.shape)
         # Apply attention
         attended_values = weights * values
+        print("[apply_attention] attended_values.shape", attended_values.shape)
         # Merge heads
         outputs = self.merge_heads(attended_values)
+        print("[apply_attention] outputs.shape", outputs.shape)
 
         return outputs, weights
 
@@ -227,9 +241,14 @@ class MultiHeadedAttention(nn.Module):
         # TODO: Write your code here
         # ==========================
         # Compute dim
-        dim = tensor.shape[-1] / self.num_heads
+        batch_size = tensor.shape[0]
+        sequence_length = tensor.shape[1]
+        dim = tensor.shape[-1] // self.num_heads
+        print("split_heads tensor.shape", tensor.shape)
         # Split heads
-        return tensor.view(batch_size, self.num_heads, sequence_length, dim)
+        output = tensor.reshape(batch_size, self.num_heads, sequence_length, dim).float()
+        print("split_heads output.shape", output.shape)
+        return output
 
     def merge_heads(self, tensor):
         """
@@ -256,9 +275,14 @@ class MultiHeadedAttention(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
+        batch_size = tensor.shape[0]
+        sequence_length = tensor.shape[2]
         dim = tensor.shape[-1]
+        print("merge_heads tensor.shape", tensor.shape)
         # Merge heads
-        return tensor.view(batch_size, sequence_length, dim * self.num_heads)
+        output = tensor.reshape(batch_size, sequence_length, dim * self.num_heads).float()
+        print("merge_heads output.shape", output.shape)
+        return output
 
     def forward(self,  queries: Tensor, keys: Tensor, values: Tensor):
         """
@@ -324,6 +348,9 @@ class MultiHeadedAttention(nn.Module):
         queries = self.W_Q(queries)
         keys = self.W_K(keys)
         values = self.W_V(values)
+        print("[forward] queries.shape", queries.shape)
+        print("[forward] keys.shape", keys.shape)
+        print("[forward] values.shape", values.shape)
         # Apply attention
         outputs, attn_weights = self.apply_attention(queries, keys, values)
         # Apply output projection
@@ -490,13 +517,13 @@ class GPTEmbedding(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        is_even = torch.arange(dimension) % 2 == 0
-        is_odd = torch.arange(dimension) % 2 == 1
-        # Compute positional encodings
-        pos_enc = torch.zeros(n_positions, dimension)
-        pos_enc[:, is_even] = torch.sin(torch.arange(n_positions) / (10000 ** ((is_even // 2) / dimension)))
-        pos_enc[:, is_odd] = torch.cos(torch.arange(n_positions) / (10000 ** ((is_odd // 2) / dimension)))
-        return pos_enc
+        positions = torch.arange(0, n_positions).unsqueeze(1)
+        embeddings = torch.zeros(n_positions, dimension)
+        i = torch.arange(0, dimension//2)
+        denom = torch.pow(10000, 2*i/dimension)
+        embeddings[:, 0::2] = torch.sin(positions / denom)
+        embeddings[:, 1::2] = torch.cos(positions / denom)
+        return embeddings
 
 
     def forward(self, tokens: Tensor) -> Tensor:
@@ -521,8 +548,11 @@ class GPTEmbedding(nn.Module):
         # TODO: Write your code here
         # ==========================
         embeddings = self.tokens(tokens)
+        print("[forward] embeddings.shape", embeddings.shape)
         position_encoding = self.buffer("position_encoding")
+        print("[forward] position_encoding.shape", position_encoding.shape)
         embeddings = embeddings + position_encoding[:tokens.shape[1], :]
+        print("[forward] embeddings.shape", embeddings.shape)
         return embeddings
 
 ########################################################################################
