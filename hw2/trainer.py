@@ -52,39 +52,40 @@ def get_loss_and_accuracy(logits, targets, eq_positions, mask, reduction='mean')
     # ==========================
     # TODO: Write your code here
     # ==========================
+    assert reduction in ['mean', 'sum', 'none']
+
     sequence_length = logits.shape[1]
 
     # Compute the mask for the RHS tokens (non-PAD AND (position > eq_position))
-    tokens_mask = mask.unsqueeze(2)
-    eq_mask = torch.arange(sequence_length).unsqueeze(0) > eq_positions.unsqueeze(1)
-    rhs_mask = tokens_mask & eq_mask
+    eq_mask = (torch.arange(sequence_length).unsqueeze(0) > eq_positions.unsqueeze(1)).int() # (B, S)
+    rhs_mask = mask & eq_mask # (B, S)
 
     # Count the number of valid tokens by batch
-    rhs_count = rhs_mask.sum(dim=1)
+    rhs_count = rhs_mask.sum(dim=1) # (B,)
 
     # Compute probabilities from logits
-    log_probs = F.log_softmax(logits, dim=2)
-    masked_log_probs = log_probs[rhs_mask]
+    log_probs = F.log_softmax(logits, dim=2) # (B, S, V)
+    expected_log_probs = torch.gather(log_probs, dim=2, index=targets.unsqueeze(2)) # (B, S, 1)
+    masked_log_probs = expected_log_probs * rhs_mask.unsqueeze(2) # (B, S, 1)
 
     # Compute the loss
-    pre_loss = - masked_log_probs.sum(dim=(2, 1)) / rhs_count
-
+    pre_loss = -1 * masked_log_probs.sum(dim=(2, 1)) / rhs_count # (B,)
     if reduction == 'mean':
-        loss = pre_loss.mean()
+        loss = pre_loss.mean(dim=0) # (1,)
     elif reduction == 'sum':
-        loss = pre_loss.sum()
+        loss = pre_loss.sum(dim=0) # (1,)
     elif reduction == 'none':
-        loss = pre_loss
-        
-    # Compute the accuracy. 
-    pre_accuracy = (logits[rhs_mask].argmax(dim=2) == targets[rhs_mask]).prod(dim=1)
+        loss = pre_loss # (B,)
 
+    # Compute the accuracy.
+    diff = (logits.argmax(dim=2) - targets) * rhs_mask # (B, S)
+    success = (diff.sum(dim=1) == 0).float() # (B,)
     if reduction == 'mean' or reduction == 'sum':
-        accuracy = pre_accuracy.mean()
+        accuracy = success.mean(dim=0) # (1,)
     elif reduction == 'sum':
-        accuracy = pre_accuracy.sum()
+        accuracy = success.sum(dim=0) # (1,)
     elif reduction == 'none':
-        accuracy = pre_accuracy
+        accuracy = success
     
     return loss, accuracy
 
