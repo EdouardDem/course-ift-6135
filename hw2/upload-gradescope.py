@@ -16,11 +16,12 @@ GRADESCOPE_ASSIGNMENT_ID = os.getenv("GRADESCOPE_ASSIGNMENT_ID")
 def new_session():
     connection = GSConnection()
     connection.login(GRADESCOPE_EMAIL, GRADESCOPE_PASSWORD)
+
     return connection.session
 
-def upload_assignment():
+def send_assignment():
     # create test session
-    test_session = new_session()
+    session = new_session()
 
     print(f"Uploading assignment to course {GRADESCOPE_COURSE_ID} and assignment {GRADESCOPE_ASSIGNMENT_ID}")
 
@@ -33,16 +34,13 @@ def upload_assignment():
         open("delivery/trainer_solution.py", "rb") as file3,
     ):
         submission_link = upload_assignment(
-            test_session,
+            session,
             course_id,
             assignment_id,
-            file1,
-            file2,
-            file3,
-            leaderboard_name="edouard-demotes-mainard",
+            file1, file2, file3
         )
 
     assert submission_link is not None
 
 if __name__ == "__main__":
-    upload_assignment()
+    send_assignment()
