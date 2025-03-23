@@ -7,4 +7,4 @@ cp lstm.py delivery/lstm_solution.py
 cp gpt.py delivery/gpt_solution.py
 cp trainer.py delivery/trainer_solution.py
 
-python upload-gradescope.py
+# python upload-gradescope.py
