@@ -164,6 +164,10 @@ def train(
     save_statistic_step (int) : Step interval to save statistics (train/test loss, accuracy, etc.)
     verbose (bool) : Verbosity of the training
     """
+    ##############
+    # Save flags
+    save_model = save_model_step > 0
+    save_statistic = save_statistic_step > 0
 
     ##############
     # Checkpoint path
@@ -200,11 +204,12 @@ def train(
 
     ######################
     # Save model
-    state = {
-            "model_state_dict": model.state_dict(),
-            "optimizer_state_dict": optimizer.state_dict(),
-    }
-    torch.save(state, f"{checkpoint_path}/{exp_name}_state_{0}_acc={test_statistics['accuracy']}_loss={test_statistics['loss']}.pth")
+    if save_model:
+        state = {
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+        }
+        torch.save(state, f"{checkpoint_path}/{exp_name}_state_{0}_acc={test_statistics['accuracy']}_loss={test_statistics['loss']}.pth")
   
     
     ##############
@@ -267,7 +272,7 @@ def train(
                 to_print += f" | lr = {current_lr}"
                 print(to_print)
 
-            if save_model_step > 0 and (cur_step in [1, n_steps] or cur_step%save_model_step==0 or cur_step <= eval_first) : 
+            if save_model and (cur_step in [1, n_steps] or cur_step%save_model_step==0 or cur_step <= eval_first) : 
                 state = {
                     "model_state_dict": model.state_dict(),
                     "optimizer_state_dict": optimizer.state_dict(),
@@ -275,7 +280,7 @@ def train(
                 torch.save(state, f"{checkpoint_path}/{exp_name}_state_{cur_step}_acc={test_statistics['accuracy']}_loss={test_statistics['loss']}.pth")
                 
 
-            if save_statistic_step > 0 and (cur_step in [1, n_steps] or cur_step%save_statistic_step==0) :
+            if save_statistic and (cur_step in [1, n_steps] or cur_step%save_statistic_step==0) :
                 #to_save = {k:v for k, v in all_metrics.items()}
                 to_save = {k: dict(v) if isinstance(v, defaultdict) else v for k, v in all_metrics.items()} # to avoid issues with lambda
                 torch.save(to_save, f"{checkpoint_path}/{exp_name}.pth")
@@ -300,11 +305,12 @@ def train(
         # elapsed_time = end_time - start_time
         # print(f"Elapsed time for one step : {elapsed_time} seconds")
 
-    state = {
-            "model_state_dict": model.state_dict(),
-            "optimizer_state_dict": optimizer.state_dict(),
-    }
-    torch.save(state, f"{checkpoint_path}/{exp_name}_state_{cur_step}_acc={test_statistics['accuracy']}_loss={test_statistics['loss']}.pth")
+    if save_model:
+        state = {
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+        }
+        torch.save(state, f"{checkpoint_path}/{exp_name}_state_{cur_step}_acc={test_statistics['accuracy']}_loss={test_statistics['loss']}.pth")
     
     train_statistics = eval_model(model, train_loader_for_eval, device)
     for k, v in train_statistics.items():
@@ -317,7 +323,8 @@ def train(
     all_metrics["all_steps"].append(cur_step)
     all_metrics["steps_epoch"][cur_step] = epoch
 
-    to_save = {k: dict(v) if isinstance(v, defaultdict) else v for k, v in all_metrics.items()} # to avoid issues with lambda
-    torch.save(to_save, f"{checkpoint_path}/{exp_name}.pth")
+    if save_statistic:
+        to_save = {k: dict(v) if isinstance(v, defaultdict) else v for k, v in all_metrics.items()} # to avoid issues with lambda
+        torch.save(to_save, f"{checkpoint_path}/{exp_name}.pth")
 
     return all_metrics
