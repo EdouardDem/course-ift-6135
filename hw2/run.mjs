@@ -19,7 +19,7 @@ async function run(
     randomStates = RandomStates,
 ) {
 
-    logPath = `${logBaseDir}/${logDir}/${getLogFolder(params)}`;
+    const logPath = `${logBaseDir}/${logDir}/${getLogFolder(params)}`;
 
     for (const randomState of randomStates) {
 
@@ -83,7 +83,7 @@ async function question2() {
             r_train: r_train,
         }, `q2`);
         await run({
-            model: 'lstm',
+            model: 'gpt',
             optimizer: 'adamw',
             n_steps: 10000,
             r_train: r_train,
