@@ -179,13 +179,13 @@ if __name__ == "__main__":
         "--save_model_step",
         type=int,
         default=10**3,
-        help="save the model every n steps (default: %(default)s).",
+        help="save the model every n steps (default: %(default)s). 0 means no saving.",
     )
     training.add_argument(
         "--save_statistic_step",
         type=int,
         default=10**3,
-        help="save the statistics every n steps (default: %(default)s).",
+        help="save the statistics every n steps (default: %(default)s). 0 means no saving.",
     )
 
     # Experiment & Miscellaneous

@@ -11,6 +11,27 @@ import time
 ########################################################################################
 ########################################################################################
 
+def ensure_cpu_tensor(value):
+    """
+    Ensures that if the input is a tensor, it's moved to CPU.
+    
+    Parameters
+    ----------
+    value : Any
+        The value to process
+        
+    Returns
+    -------
+    value : Any
+        The input value, with any tensors moved to CPU
+    """
+    if isinstance(value, torch.Tensor):
+        return value.cpu()
+    return value
+
+########################################################################################
+########################################################################################
+
 def get_loss_and_accuracy(logits, targets, eq_positions, mask, reduction='mean'):
     """
     Computes the mean negative log-likelihood loss and the accuracy on the right-hand side (RHS)
@@ -166,12 +187,12 @@ def train(
     ##############
 
     train_statistics = eval_model(model, train_loader_for_eval, device)
-    for k, v in train_statistics.items() :
-        all_metrics["train"][k].append(v)
+    for k, v in train_statistics.items():
+        all_metrics["train"][k].append(ensure_cpu_tensor(v))
 
-    test_statistics = eval_model(model, test_loader, device) 
-    for k, v in test_statistics.items() :
-        all_metrics["test"][k].append(v)
+    test_statistics = eval_model(model, test_loader, device)
+    for k, v in test_statistics.items():
+        all_metrics["test"][k].append(ensure_cpu_tensor(v))
 
     all_metrics["all_steps"].append(0)
     all_metrics["steps_epoch"][0] = 0
@@ -229,10 +250,12 @@ def train(
               
             if cur_step in [1, n_steps] or cur_step % eval_period == 0 or cur_step <= eval_first:
                 train_statistics = eval_model(model, train_loader_for_eval, device)
-                for k, v in train_statistics.items() : all_metrics["train"][k].append(v)
+                for k, v in train_statistics.items():
+                    all_metrics["train"][k].append(ensure_cpu_tensor(v))
 
                 test_statistics = eval_model(model, test_loader, device)
-                for k, v in test_statistics.items() : all_metrics["test"][k].append(v)
+                for k, v in test_statistics.items():
+                    all_metrics["test"][k].append(ensure_cpu_tensor(v))
 
                 all_metrics["all_steps"].append(cur_step)
                 all_metrics["steps_epoch"][cur_step] = epoch
@@ -244,7 +267,7 @@ def train(
                 to_print += f" | lr = {current_lr}"
                 print(to_print)
 
-            if cur_step in [1, n_steps] or cur_step%save_model_step==0 or cur_step <= eval_first : 
+            if save_model_step > 0 and (cur_step in [1, n_steps] or cur_step%save_model_step==0 or cur_step <= eval_first) : 
                 state = {
                     "model_state_dict": model.state_dict(),
                     "optimizer_state_dict": optimizer.state_dict(),
@@ -252,7 +275,7 @@ def train(
                 torch.save(state, f"{checkpoint_path}/{exp_name}_state_{cur_step}_acc={test_statistics['accuracy']}_loss={test_statistics['loss']}.pth")
                 
 
-            if cur_step in [1, n_steps] or cur_step%save_statistic_step==0:
+            if save_statistic_step > 0 and (cur_step in [1, n_steps] or cur_step%save_statistic_step==0) :
                 #to_save = {k:v for k, v in all_metrics.items()}
                 to_save = {k: dict(v) if isinstance(v, defaultdict) else v for k, v in all_metrics.items()} # to avoid issues with lambda
                 torch.save(to_save, f"{checkpoint_path}/{exp_name}.pth")
@@ -284,10 +307,12 @@ def train(
     torch.save(state, f"{checkpoint_path}/{exp_name}_state_{cur_step}_acc={test_statistics['accuracy']}_loss={test_statistics['loss']}.pth")
     
     train_statistics = eval_model(model, train_loader_for_eval, device)
-    for k, v in train_statistics.items() : all_metrics["train"][k].append(v)
+    for k, v in train_statistics.items():
+        all_metrics["train"][k].append(ensure_cpu_tensor(v))
 
     test_statistics = eval_model(model, test_loader, device)
-    for k, v in test_statistics.items() : all_metrics["test"][k].append(v)
+    for k, v in test_statistics.items():
+        all_metrics["test"][k].append(ensure_cpu_tensor(v))
 
     all_metrics["all_steps"].append(cur_step)
     all_metrics["steps_epoch"][cur_step] = epoch

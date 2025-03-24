@@ -11,10 +11,13 @@ const pythonPath = (await $`which python`).text().trim();
 console.log(`Python Path is ${pythonPath}`);
 console.log(`Current working directory is ${process.cwd()}`);
 
-async function run(params, skipExisting = true, randomStates = RandomStates, logDir = getLogDir(params)) {
-    
-    const args = [];
-    Object.entries(params).forEach(([key, value]) => args.push(`--${key}`, value));
+async function run(
+    params,
+    skipExisting = true,
+    saveStates = false,
+    randomStates = RandomStates,
+    logDir = getLogDir(params)
+) {
 
     for (const randomState of randomStates) {
 
@@ -30,8 +33,17 @@ async function run(params, skipExisting = true, randomStates = RandomStates, log
         } else {
             mkdirSync(logDirWithSeed, { recursive: true });
         }
-        
-        await $`${pythonPath} run_exp.py --seed ${randomState} --log_dir ${logDirWithSeed} ${args}`;
+
+        // Add the arguments to the command
+        const args = [];
+        Object.entries(params).forEach(([key, value]) => args.push(`--${key}`, value));
+        args.push('--seed', randomState);
+        args.push('--log_dir', logDirWithSeed);
+        if (!saveStates) {
+            args.push('--save_model_step', '0');
+        }
+
+        await $`${pythonPath} run_exp.py ${args}`;
     }
 }
 
@@ -45,9 +57,19 @@ function getLogDir(params) {
 // ---------------------------------------------------------------------------
 $.verbose = true
 
-await run({
-    model: 'gpt',
-    optimizer: 'adamw',
-    n_steps: 10000,
-}, false);
+async function question1() {
+    await run({
+        model: 'gpt',
+        optimizer: 'adamw',
+        n_steps: 10000,
+    }, false);
+
+    await run({
+        model: 'lstm',
+        optimizer: 'adamw',
+        n_steps: 10000,
+    }, false);
+}
+
+await question1();
 
