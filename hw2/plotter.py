@@ -77,6 +77,7 @@ def plot_loss_accs(
     if fileName is not None and filePath is not None :
         os.makedirs(filePath, exist_ok=True)
         plt.savefig(f"{filePath}/{fileName}"  + '.pdf', dpi=300, bbox_inches='tight', format='pdf')
+        plt.savefig(f"{filePath}/{fileName}"  + '.png', dpi=300, bbox_inches='tight', format='png')
 
     if show : plt.show()
     else : plt.close()
