@@ -83,7 +83,7 @@ async function question2() {
             r_train: r_train,
         }, `q2`);
         await run({
-            model: 'gpt',
+            model: 'lstm',
             optimizer: 'adamw',
             n_steps: 10000,
             r_train: r_train,
