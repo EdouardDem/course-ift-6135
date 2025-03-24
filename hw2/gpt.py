@@ -127,7 +127,7 @@ class MultiHeadedAttention(nn.Module):
         weights = torch.matmul(queries, keys.transpose(-2, -1)) / math.sqrt(self.head_size)
         # Apply causal mask
         sequence_length = weights.shape[-1]
-        ones = torch.ones(sequence_length, sequence_length)
+        ones = torch.ones(sequence_length, sequence_length, device=weights.device)
         mask = torch.tril(ones, diagonal=0).bool()
         weights = weights.masked_fill(mask == 0, float('-inf'))
         # Apply softmax
@@ -502,9 +502,10 @@ class GPTEmbedding(nn.Module):
         # ==========================
         # TODO: Write your code here
         # ==========================
-        positions = torch.arange(0, n_positions).unsqueeze(1)
-        embeddings = torch.zeros(n_positions, dimension)
-        i = torch.arange(0, dimension//2)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        positions = torch.arange(0, n_positions, device=device).unsqueeze(1)
+        embeddings = torch.zeros(n_positions, dimension, device=device)
+        i = torch.arange(0, dimension//2, device=device)
         denom = torch.pow(10000, 2*i/dimension)
         embeddings[:, 0::2] = torch.sin(positions / denom)
         embeddings[:, 1::2] = torch.cos(positions / denom)
