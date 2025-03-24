@@ -12,9 +12,9 @@ console.log(`Python Path is ${pythonPath}`);
 console.log(`Current working directory is ${process.cwd()}`);
 
 async function run(params, skipExisting = true, randomStates = RandomStates, logDir = getLogDir(params)) {
-    const argsStr = Object.entries(params)
-        .map(([key, value]) => `--${key} ${value}`)
-        .join(' ');
+    
+    const args = [];
+    Object.entries(params).forEach(([key, value]) => args.push(`--${key}`, value));
 
     for (const randomState of randomStates) {
 
@@ -31,7 +31,7 @@ async function run(params, skipExisting = true, randomStates = RandomStates, log
             mkdirSync(logDirWithSeed, { recursive: true });
         }
         
-        await $`${pythonPath} run_exp.py `+ argsStr +` --seed ${randomState} --log_dir ${logDirWithSeed}`;
+        await $`${pythonPath} run_exp.py --seed ${randomState} --log_dir ${logDirWithSeed} ${args}`;
     }
 }
 
