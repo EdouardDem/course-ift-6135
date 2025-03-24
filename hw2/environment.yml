@@ -10,6 +10,7 @@ dependencies:
   - jupyter
   - ipywidgets
   - tqdm
+  - tabulate
   - pip:
     - torch
     - torchvision

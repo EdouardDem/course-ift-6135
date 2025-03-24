@@ -3,7 +3,7 @@ import numpy as np
 import re
 import os
 from tqdm import tqdm
-
+from pathlib import Path
 MODEL_FILE_NAME_REGEX = rf'_state_\d+_acc=[\d.eE+-]+_loss=[\d.eE+-]+\.pth$'
 MODEL_FILE_NAME_REGEX_MATCH = rf'_state_(\d+)_acc=([\d.eE+-]+)_loss=([\d.eE+-]+)\.pth$'
 
@@ -254,6 +254,14 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
     max_test_accuracy_step_mean = np.mean(max_test_accuracy_steps)
     max_test_accuracy_step_std = np.std(max_test_accuracy_steps)
 
+    # Find the delta step between the maximum loss for train and test
+    delta_step_loss = np.array(min_test_loss_steps) - np.array(min_train_loss_steps)
+    delta_step_accuracy = np.array(max_test_accuracy_steps) - np.array(max_train_accuracy_steps)
+    delta_step_loss_mean = np.mean(delta_step_loss)
+    delta_step_loss_std = np.std(delta_step_loss)
+    delta_step_accuracy_mean = np.mean(delta_step_accuracy)
+    delta_step_accuracy_std = np.std(delta_step_accuracy)
+
     # Return the results in a dictionary
     return {
         "min_train_loss": min_train_loss_mean,
@@ -272,5 +280,62 @@ def get_extrema_performance_steps_per_trials(all_metrics, T_max=None):
         "max_test_accuracy_std": max_test_accuracy_std,
         "max_test_accuracy_step": max_test_accuracy_step_mean,
         "max_test_accuracy_step_std": max_test_accuracy_step_std,
-        "T_max_indexes" : T_max_indexes
+        "T_max_indexes" : T_max_indexes,
+        "delta_step_loss": delta_step_loss_mean,
+        "delta_step_loss_std": delta_step_loss_std,
+        "delta_step_accuracy": delta_step_accuracy_mean,
+        "delta_step_accuracy_std": delta_step_accuracy_std
     }
+
+
+
+########################################################################################
+########################################################################################
+def load_results(base_dir, seed):
+    """
+    Load the results from the given directory.
+    """
+    return torch.load(base_dir / f"seed={seed}/0/test.pth")
+
+def load_and_combine_results(base_dir, seeds):
+    """
+    Load the results from the given directory and combine them into a single dictionary.
+    """
+    results_per_seed = []
+    for seed in seeds:
+        results_per_seed.append(load_results(base_dir, seed))
+
+    splits = ['train', 'test']
+    metrics = ['loss', 'accuracy']
+
+    # Merge results from all seeds
+    results = {}
+    results['all_steps'] = [r['all_steps'] for r in results_per_seed]
+    results['steps_epoch'] = [r['steps_epoch'] for r in results_per_seed]
+    for split in splits:
+        results[split] = {}
+        for metric in metrics:
+            results[split][metric] = [r[split][metric] for r in results_per_seed]
+
+    results["extrema"] = get_extrema_performance_steps_per_trials(results)
+
+    for split in splits:
+        for metric in metrics:
+            metric_values = results[split][metric]
+            mean = np.mean(metric_values, axis=0)
+            std = np.std(metric_values, axis=0)
+            results[split][metric] = {
+                "mean": mean,
+                "std": std,
+                "global_mean": np.mean(mean),
+                "global_std": np.mean(std)
+            }
+
+    return results
+
+if __name__ == "__main__":
+    base_dir = Path("logs/q1/model=gpt-optimizer=adamw-n_steps=10000")
+    seeds = [0, 42]
+    results = load_and_combine_results(base_dir, seeds)
+    print(results)
+
