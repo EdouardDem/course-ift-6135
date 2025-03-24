@@ -123,8 +123,8 @@ class LSTM(nn.Module):
             # ==========================
             # TODO: Write your code here
             # ==========================
-            h0 = torch.zeros(self.num_layers, batch_size, self.hidden_size)
-            c0 = torch.zeros(self.num_layers, batch_size, self.hidden_size)
+            h0 = torch.zeros(self.num_layers, batch_size, self.hidden_size).to(x.device)
+            c0 = torch.zeros(self.num_layers, batch_size, self.hidden_size).to(x.device)
         else:
             h0, c0 = hx  # (num_layers, batch_size, hidden_size), (num_layers, batch_size, hidden_size)
 

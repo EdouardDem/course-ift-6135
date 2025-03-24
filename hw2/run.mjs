@@ -3,9 +3,11 @@
 import { existsSync, mkdirSync, rmSync } from 'fs';
 
 $.shell = 'zsh';
+
 const RandomStates = [0, 42];
 const logBaseDir = './logs';
 const pythonPath = (await $`which python`).text().trim();
+
 console.log(`Python Path is ${pythonPath}`);
 console.log(`Current working directory is ${process.cwd()}`);
 

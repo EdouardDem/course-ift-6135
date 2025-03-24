@@ -57,7 +57,7 @@ def get_loss_and_accuracy(logits, targets, eq_positions, mask, reduction='mean')
     sequence_length = logits.shape[1]
 
     # Compute the mask for the RHS tokens (non-PAD AND (position > eq_position))
-    eq_mask = (torch.arange(sequence_length).unsqueeze(0) > eq_positions.unsqueeze(1)).int() # (B, S)
+    eq_mask = (torch.arange(sequence_length, device=logits.device).unsqueeze(0) > eq_positions.unsqueeze(1)).int() # (B, S)
     rhs_mask = mask & eq_mask # (B, S)
 
     # Count the number of valid tokens by batch
@@ -102,6 +102,7 @@ def eval_model(model, loader, device) :
     for batch in loader:
         batch_x, batch_y, eq_positions, mask = batch # (B, S), (B, S), (B,), (B, S)
         batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+        eq_positions, mask = eq_positions.to(device), mask.to(device)
         logits, *_ = model(batch_x) # (B, S, V)
         batch_loss, batch_acc = get_loss_and_accuracy(logits, batch_y, eq_positions, mask)
         n += batch_x.shape[0]
@@ -206,6 +207,7 @@ def train(
         for i, batch in enumerate(train_loader) :
             batch_x, batch_y, eq_positions, mask = batch # (B, S), (B, S), (B,), (B, S)
             batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+            eq_positions, mask = eq_positions.to(device), mask.to(device)
 
             optimizer.zero_grad(set_to_none=True)
             model.train()
