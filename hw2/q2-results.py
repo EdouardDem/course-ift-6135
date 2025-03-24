@@ -109,7 +109,7 @@ def dataframe_to_markdown(df):
 
 def main():
     # Path to experiment directories
-    base_dir = Path("logs/q1")
+    base_dir = Path("logs/q2")
     lstm_dir = base_dir / "model=lstm-optimizer=adamw-n_steps=10000"
     gpt_dir = base_dir / "model=gpt-optimizer=adamw-n_steps=10000"
     
@@ -168,7 +168,7 @@ def main():
     print(df.to_string(index=False))
     
     # Create results directory if it doesn't exist
-    results_dir = Path("results/q1")
+    results_dir = Path("results/q2")
     results_dir.mkdir(parents=True, exist_ok=True)
 
     # Save as LaTeX table
