@@ -130,7 +130,7 @@ def eval_model(model, loader, device) :
         n += batch_x.shape[0]
         loss += batch_loss.item() * batch_x.shape[0]
         acc += batch_acc * batch_x.shape[0]
-        l2_norm += torch.norm(model.parameters(), p=2).item() * batch_x.shape[0]
+        # l2_norm += torch.norm(model.parameters(), p=2).item() * batch_x.shape[0] # TODO: Fix this
 
     ##########
     # You can add more metrics in the dictionary (e.g., l2 norm of the parameters, etc.) 
