@@ -40,7 +40,7 @@ def plot_metric_by_r_train(metric, label, model_name, seeds=["0", "42"], figsize
     has_data = False  # Flag to track if any data was plotted
     
     for idx, r_train in enumerate(r_trains):
-        base_dir = Path(f"logs/q2/model={model_name}-optimizer=adamw-n_steps=10000-r_train={r_train}")
+        base_dir = Path(f"logs/q3/model={model_name}-optimizer=adamw-n_steps=10000-r_train={r_train}")
         
         # Skip if directory doesn't exist
         if not base_dir.exists():

@@ -73,7 +73,7 @@ async function question1() {
     }, 'q1');
 }
 
-async function question2() {
+async function question3() {
     const r_trains = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
     for (const r_train of r_trains) {
         await run({
@@ -81,15 +81,15 @@ async function question2() {
             optimizer: 'adamw',
             n_steps: 10000,
             r_train: r_train,
-        }, `q2`);
+        }, `q3`);
         await run({
             model: 'lstm',
             optimizer: 'adamw',
             n_steps: 10000,
             r_train: r_train,
-        }, `q2`);
+        }, `q3`);
     }
 }
 
 await question1();
-await question2();
+await question3();
