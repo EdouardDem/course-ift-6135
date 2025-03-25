@@ -30,7 +30,7 @@ def plot_metric_by_r_train(metric, label, model_name, seeds=["0", "42"], figsize
     dataset, measure = metric.split('.')
     
     # Create results directory if it doesn't exist
-    os.makedirs('results/q3', exist_ok=True)
+    os.makedirs('results/q3-a', exist_ok=True)
     
     plt.figure(figsize=figsize)
     
@@ -86,10 +86,10 @@ def plot_metric_by_r_train(metric, label, model_name, seeds=["0", "42"], figsize
     
     # Save the figure
     safe_metric = metric.replace('.', '_')
-    plt.savefig(f'results/q3/{model_name}_{safe_metric}_combined.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'results/q3-a/{model_name}_{safe_metric}_combined.png', dpi=300, bbox_inches='tight')
     plt.close()
     
-    print(f"Combined plot saved as results/q3/{model_name}_{safe_metric}_combined.png")
+    print(f"Combined plot saved as results/q3-a/{model_name}_{safe_metric}_combined.png")
 
 if __name__ == "__main__":
     # Plot training and validation metrics for the GPT model
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     plot_metric_by_r_train('train.accuracy', 'Training Accuracy', 'lstm')
     plot_metric_by_r_train('test.accuracy', 'Validation Accuracy', 'lstm')
     
-    print("\nAll plots have been saved to the results/q3/ directory.")
+    print("\nAll plots have been saved to the results/q3-a/ directory.")
 
 
 
