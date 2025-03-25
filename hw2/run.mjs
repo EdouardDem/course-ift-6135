@@ -154,25 +154,21 @@ async function question5() {
 
 async function question6() {
     const batch_sizes = [32, 64, 128, 256, 512];
-    const alphas = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
-    const baseSteps = 2 * 10000;
+    const n_steps = 2 * 10000 + 1;
 
     for (const batch_size of batch_sizes) {
-        for (const alpha of alphas) {
-            const n_steps = Math.floor(baseSteps * alpha) + 1;
-            await run({
-                model: 'gpt',
-                optimizer: 'adamw',
-                n_steps,
-                train_batch_size: batch_size,
-            }, `q6`);
-            await run({
-                model: 'lstm',
-                optimizer: 'adamw',
-                n_steps,
-                train_batch_size: batch_size,
-            }, `q6`);
-        }
+        await run({
+            model: 'gpt',
+            optimizer: 'adamw',
+            n_steps,
+            train_batch_size: batch_size,
+        }, `q6`);
+        await run({
+            model: 'lstm',
+            optimizer: 'adamw',
+            n_steps,
+            train_batch_size: batch_size,
+        }, `q6`);
     }
 }
 
