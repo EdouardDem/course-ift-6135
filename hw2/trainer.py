@@ -120,6 +120,7 @@ def eval_model(model, loader, device) :
     acc = 0
     loss = 0
     n = 0
+    l2_norm = 0
     for batch in loader:
         batch_x, batch_y, eq_positions, mask = batch # (B, S), (B, S), (B,), (B, S)
         batch_x, batch_y = batch_x.to(device), batch_y.to(device)
@@ -129,13 +130,13 @@ def eval_model(model, loader, device) :
         n += batch_x.shape[0]
         loss += batch_loss.item() * batch_x.shape[0]
         acc += batch_acc * batch_x.shape[0]
-
+        l2_norm += torch.norm(model.parameters(), p=2).item() * batch_x.shape[0]
 
     ##########
     # You can add more metrics in the dictionary (e.g., l2 norm of the parameters, etc.) 
     ##########
 
-    return {"loss" : loss / n, "accuracy": acc / n}
+    return {"loss" : loss / n, "accuracy": acc / n, "l2_norm": l2_norm / n}
     
 ########################################################################################
 ########################################################################################
