@@ -96,8 +96,10 @@ class DummyScheduler:
 
 ########################################################################################
 ########################################################################################
-
 def train(args):
+
+    args = fix_args(args)
+
     # Seed the experiment, for repeatability
     seed_experiment(args.seed)
 
@@ -115,10 +117,6 @@ def train(args):
         for k, v in vars(args).items() :
             print(k, ":", v)
         print("=="*60)
-
-    # Squeeze operation_orders if looks like [[2, 3]]
-    if isinstance(args.operation_orders, list) and len(args.operation_orders) == 1 and isinstance(args.operation_orders[0], list):
-        args.operation_orders = args.operation_orders[0]
 
     # Data
     print("args.operation_orders",args.operation_orders)
@@ -262,7 +260,11 @@ def get_dataset_by_operation_order(args):
 
     return (train_dataset, valid_dataset), tokenizer, MAX_LENGTH, padding_index
 
-
+def fix_args(args):
+    # Squeeze operation_orders if looks like [[2, 3]]
+    if isinstance(args.operation_orders, list) and len(args.operation_orders) == 1 and isinstance(args.operation_orders[0], list):
+        args.operation_orders = args.operation_orders[0]
+    return args
 ########################################################################################
 ########################################################################################
 
