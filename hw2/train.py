@@ -119,7 +119,6 @@ def train(args):
         print("=="*60)
 
     # Data
-    print("args.operation_orders",args.operation_orders)
     balance_dataset = args.operation_orders == [2, 3]
     (train_dataset, valid_dataset), tokenizer, MAX_LENGTH, padding_index = get_dataset_by_operation_order(args) if balance_dataset else get_dataset(args)
     
