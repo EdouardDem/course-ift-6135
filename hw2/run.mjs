@@ -91,5 +91,26 @@ async function question3() {
     }
 }
 
+async function question4() {
+    await run({
+        model: 'gpt',
+        optimizer: 'adamw',
+        n_steps: 10000,
+        operation_orders: '2,3',
+        p: 11,
+        r_train: 0.5,
+    }, 'q4');
+
+    await run({
+        model: 'lstm',
+        optimizer: 'adamw',
+        n_steps: 10000,
+        operation_orders: '2,3',
+        p: 11,  
+        r_train: 0.5,
+    }, 'q4');
+}
+
 await question1();
 await question3();
+await question4();

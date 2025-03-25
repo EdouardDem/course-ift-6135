@@ -44,11 +44,11 @@ if __name__ == "__main__":
     )
     data.add_argument(
         "--operation_orders",
-        type=int,
         nargs="+",
         choices=[2, 3, [2, 3]],
         default=[2],
         help="list of orders of operations to use (default: %(default)s).",
+        type=lambda x: [int(i) for i in x.split(',')] if isinstance(x, str) else x,
     )
     data.add_argument(
         "--train_batch_size",

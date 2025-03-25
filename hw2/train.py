@@ -116,10 +116,14 @@ def train(args):
             print(k, ":", v)
         print("=="*60)
 
+    # Squeeze operation_orders if looks like [[2, 3]]
+    if isinstance(args.operation_orders, list) and len(args.operation_orders) == 1 and isinstance(args.operation_orders[0], list):
+        args.operation_orders = args.operation_orders[0]
+
     # Data
-    (train_dataset, valid_dataset), tokenizer, MAX_LENGTH, padding_index = get_arithmetic_dataset(
-        args.p, args.p, args.operator, args.r_train, args.operation_orders, is_symmetric=False, shuffle=True, seed=args.seed
-    )
+    print("args.operation_orders",args.operation_orders)
+    balance_dataset = args.operation_orders == [2, 3]
+    (train_dataset, valid_dataset), tokenizer, MAX_LENGTH, padding_index = get_dataset_by_operation_order(args) if balance_dataset else get_dataset(args)
     
     train_dataloader = DataLoader(
         train_dataset,
@@ -220,6 +224,43 @@ def train(args):
         fileName=args.exp_name, filePath=checkpoint_path, show=False)
 
     return all_metrics, checkpoint_path
+
+
+########################################################################################
+########################################################################################
+def get_dataset(args):
+    return get_arithmetic_dataset(
+        args.p, args.p, args.operator, args.r_train, args.operation_orders, is_symmetric=False, shuffle=True, seed=args.seed
+    )
+
+def get_dataset_by_operation_order(args):
+    (dataset, _), tokenizer, MAX_LENGTH, padding_index = get_arithmetic_dataset(
+        args.p, args.p, args.operator, 1.0, args.operation_orders, seed=args.seed
+    )
+    vocabulary_size = len(tokenizer)
+    dataset_per_oders = {
+        2 : torch.utils.data.Subset(
+            dataset,
+            [i for i in range(len(dataset)) if dataset[i][2] == 3]
+        ), # a + b = r EOS PAD PAD
+        3 : torch.utils.data.Subset(
+            dataset,
+            [i for i in range(len(dataset)) if dataset[i][2] == 5]
+        ) # a + b + c = r EOS
+    }
+    
+    train_dataset_2, valid_dataset_2 = torch.utils.data.random_split(dataset_per_oders[2], [args.r_train, 1-args.r_train])
+    train_dataset_3, valid_dataset_3 = torch.utils.data.random_split(dataset_per_oders[3], [args.r_train, 1-args.r_train])
+
+    train_dataset = torch.utils.data.ConcatDataset(
+        [train_dataset_2, train_dataset_3]
+    )
+    valid_dataset = torch.utils.data.ConcatDataset(
+        [valid_dataset_2, valid_dataset_3]
+    )
+
+
+    return (train_dataset, valid_dataset), tokenizer, MAX_LENGTH, padding_index
 
 
 ########################################################################################
