@@ -184,6 +184,107 @@ def plot_model_comparison(seeds, figsize=(15, 10)):
             print(f"Comparison plot saved as results/q4-a/comparison_{dataset}_{metric}.png")
 
 
+def plot_combined_comparison(seeds, figsize=(15, 12)):
+    """
+    Create a single grid with all comparisons between LSTM and GPT models.
+    
+    Parameters:
+    -----------
+    seeds : list
+        List of seeds to average over
+    figsize : tuple, optional
+        Figure size, default is (15, 12)
+    """
+    # Create results directory if it doesn't exist
+    os.makedirs('results/q4-a', exist_ok=True)
+    
+    # Create a 2x2 subplot grid
+    fig, axs = plt.subplots(2, 2, figsize=figsize)
+    fig.suptitle('LSTM vs GPT Model Comparison (optimizer=adamw, operation_orders=[2,3], p=11)', fontsize=16)
+    
+    # Metrics and positions in the grid
+    grid_positions = {
+        ('train', 'loss'): (0, 0),     # Training Loss: top-left
+        ('test', 'loss'): (0, 1),      # Validation Loss: top-right  
+        ('train', 'accuracy'): (1, 0),  # Training Accuracy: bottom-left
+        ('test', 'accuracy'): (1, 1)    # Validation Accuracy: bottom-right
+    }
+    
+    # Titles for each subplot
+    titles = {
+        ('train', 'loss'): 'Training Loss',
+        ('test', 'loss'): 'Validation Loss',
+        ('train', 'accuracy'): 'Training Accuracy',
+        ('test', 'accuracy'): 'Validation Accuracy'
+    }
+    
+    # Y-axis labels
+    y_labels = {
+        'loss': 'Loss',
+        'accuracy': 'Accuracy'
+    }
+    
+    # Colors for each model
+    colors = {'lstm': 'blue', 'gpt': 'red'}
+    
+    # Load data for each model
+    model_data = {}
+    for model_name in models:
+        base_dir = Path(f"logs/q4/model={model_name}-optimizer=adamw-n_steps=10000-operation_orders=2,3-p=11")
+        
+        if not base_dir.exists():
+            print(f"Directory not found: {base_dir}")
+            continue
+        
+        try:
+            results = load_and_combine_results(base_dir, seeds)
+            if results is not None:
+                model_data[model_name] = results
+            else:
+                print(f"No results found for {model_name}")
+        except Exception as e:
+            print(f"Error loading data for {model_name}: {e}")
+    
+    # Check if we have data for at least one model
+    if not model_data:
+        print("No data available for any model. Cannot create comparison plot.")
+        return
+    
+    # Plot each metric on its corresponding subplot
+    for (dataset, metric), (row, col) in grid_positions.items():
+        ax = axs[row, col]
+        
+        # Set title and labels
+        ax.set_title(titles[(dataset, metric)])
+        ax.set_xlabel('Training Steps (t)')
+        ax.set_ylabel(y_labels[metric])
+        ax.grid(True, linestyle='--', alpha=0.7)
+        
+        has_data = False
+        
+        # Plot data for each available model
+        for model_name, results in model_data.items():
+            if dataset in results and metric in results[dataset]:
+                steps = results['all_steps'][0]
+                y_mean = results[dataset][metric]['mean']
+                y_std = results[dataset][metric]['std']
+                
+                ax.plot(steps, y_mean, color=colors[model_name], label=f'{model_name.upper()}')
+                ax.fill_between(steps, y_mean - y_std, y_mean + y_std, color=colors[model_name], alpha=0.3)
+                has_data = True
+        
+        # Add legend if we have data
+        if has_data:
+            ax.legend()
+    
+    # Adjust layout and save figure
+    fig.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust for the suptitle
+    fig.savefig('results/q4-a/combined_comparison.png', dpi=300, bbox_inches='tight')
+    plt.close(fig)
+    
+    print("Combined comparison plot saved as results/q4-a/combined_comparison.png")
+
+
 if __name__ == "__main__":
     # Create the results directory if it doesn't exist
     os.makedirs('results/q4-a', exist_ok=True)
@@ -193,8 +294,12 @@ if __name__ == "__main__":
         print(f"\nGenerating plots for {model.upper()} model...")
         plot_metrics_over_time(model, seeds)
     
-    # Plot model comparisons
-    print("\nGenerating model comparison plots...")
+    # Plot separate model comparisons
+    print("\nGenerating individual comparison plots...")
     plot_model_comparison(seeds)
+    
+    # Plot combined comparison grid
+    print("\nGenerating combined comparison grid...")
+    plot_combined_comparison(seeds)
     
     print("\nAll plots have been saved to the results/q4-a/ directory.") 
