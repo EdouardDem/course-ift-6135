@@ -69,39 +69,19 @@ def plot_metrics_over_time(all_results, figsize=(10, 18)):
     for model_name in all_results:
         # Create a figure for each metric pair (train vs val)
         for metric_key, metric_label in metric_pairs:
-            fig, axs = plt.subplots(1, 2, figsize=figsize[::-1])  # Swap width and height for 1x2 grid
-            fig.suptitle(f'{model_name.upper()} Model - {metric_label} vs Training Steps', fontsize=16)
-            
             # Set up colormap for weight_decay values
             norm = mcolors.Normalize(vmin=min(weight_decay_values), vmax=max(weight_decay_values))
             cmap = plt.cm.viridis
             
-            # Define the splits for all metrics except l2_norm
-            splits = ['train', 'test'] if metric_key != 'l2_norm' else ['train', 'train']
-            split_labels = ['Training', 'Validation'] if metric_key != 'l2_norm' else ['', '']
-            
-            # For each subplot (train and validation)
-            for idx, (split, split_label) in enumerate(zip(splits, split_labels)):
-                ax = axs[idx]
+            # Special handling for l2_norm - use a single plot
+            if metric_key == 'l2_norm':
+                # Create a single figure for L2 norm
+                fig, ax = plt.subplots(1, 1, figsize=(10, 8))
+                fig.suptitle(f'{model_name.upper()} Model - {metric_label} vs Training Steps', fontsize=16)
                 
-                # Set title based on the metric and split
-                if metric_key == 'l2_norm':
-                    # Only one plot for L2 norm (centered in the figure)
-                    if idx == 0:
-                        ax.set_title(f'{metric_label}')
-                    else:
-                        # Hide the second axis for L2 norm (we'll only use the first)
-                        ax.set_visible(False)
-                        continue
-                else:
-                    ax.set_title(f'{split_label} {metric_label}')
-                
+                ax.set_title(f'{metric_label}')
                 ax.set_xlabel('Training Steps (t)')
                 ax.set_ylabel(metric_label)
-                
-                # Use log scale for loss
-                if metric_key == 'loss':
-                    ax.set_yscale('log')
                 
                 # For each weight_decay value, plot the metric
                 for weight_decay in sorted(all_results[model_name].keys()):
@@ -114,23 +94,13 @@ def plot_metrics_over_time(all_results, figsize=(10, 18)):
                     
                     steps = results['all_steps'][0]  # Use first seed's steps
                     
-                    # Handle the different metrics appropriately
-                    if metric_key == 'l2_norm':
-                        # L2 norm is stored differently
-                        if 'l2_norm' in results.get('train', {}):
-                            values = results['train']['l2_norm']['mean']
-                            std_values = results['train']['l2_norm']['std']
-                        else:
-                            print(f"No L2 norm data for {model_name} with weight_decay={weight_decay}")
-                            continue
+                    # L2 norm is stored differently
+                    if 'l2_norm' in results.get('train', {}):
+                        values = results['train']['l2_norm']['mean']
+                        std_values = results['train']['l2_norm']['std']
                     else:
-                        # Regular metrics (loss and accuracy)
-                        if split not in results or metric_key not in results[split]:
-                            print(f"Missing {split} {metric_key} data for {model_name} with weight_decay={weight_decay}")
-                            continue
-                        
-                        values = results[split][metric_key]['mean']
-                        std_values = results[split][metric_key]['std']
+                        print(f"No L2 norm data for {model_name} with weight_decay={weight_decay}")
+                        continue
                     
                     # Make sure lengths match
                     if len(steps) != len(values):
@@ -147,16 +117,65 @@ def plot_metrics_over_time(all_results, figsize=(10, 18)):
                     ax.fill_between(steps, values - std_values, values + std_values, color=color, alpha=0.2)
                 
                 ax.grid(True, linestyle='--', alpha=0.7)
+                ax.legend(loc='best')
+            else:
+                # For other metrics (loss, accuracy), use the original 1x2 grid for train/test
+                fig, axs = plt.subplots(1, 2, figsize=figsize[::-1])  # Swap width and height for 1x2 grid
+                fig.suptitle(f'{model_name.upper()} Model - {metric_label} vs Training Steps', fontsize=16)
                 
-                # Add legend to the first subplot for each metric pair
-                if idx == 0:
-                    ax.legend(loc='best')
-            
-            # Special handling for L2 norm: center the plot if it's the only one being shown
-            if metric_key == 'l2_norm':
-                # Adjust the first subplot to take the whole figure width
-                pos = axs[0].get_position()
-                axs[0].set_position([pos.x0, pos.y0, pos.width * 2, pos.height])
+                # Define the splits for regular metrics
+                splits = ['train', 'test']
+                split_labels = ['Training', 'Validation']
+                
+                # For each subplot (train and validation)
+                for idx, (split, split_label) in enumerate(zip(splits, split_labels)):
+                    ax = axs[idx]
+                    ax.set_title(f'{split_label} {metric_label}')
+                    ax.set_xlabel('Training Steps (t)')
+                    ax.set_ylabel(metric_label)
+                    
+                    # Use log scale for loss
+                    if metric_key == 'loss':
+                        ax.set_yscale('log')
+                    
+                    # For each weight_decay value, plot the metric
+                    for weight_decay in sorted(all_results[model_name].keys()):
+                        results = all_results[model_name][weight_decay]
+                        
+                        # Get steps for x-axis
+                        if 'all_steps' not in results or len(results['all_steps']) == 0:
+                            print(f"No steps data for {model_name} with weight_decay={weight_decay}")
+                            continue
+                        
+                        steps = results['all_steps'][0]  # Use first seed's steps
+                        
+                        # Regular metrics (loss and accuracy)
+                        if split not in results or metric_key not in results[split]:
+                            print(f"Missing {split} {metric_key} data for {model_name} with weight_decay={weight_decay}")
+                            continue
+                        
+                        values = results[split][metric_key]['mean']
+                        std_values = results[split][metric_key]['std']
+                        
+                        # Make sure lengths match
+                        if len(steps) != len(values):
+                            min_len = min(len(steps), len(values))
+                            steps = steps[:min_len]
+                            values = values[:min_len]
+                            std_values = std_values[:min_len] if len(std_values) >= min_len else std_values[:len(std_values)]
+                        
+                        # Plot with color based on weight_decay
+                        color = cmap(norm(weight_decay))
+                        line, = ax.plot(steps, values, '-', color=color, label=f'weight_decay={weight_decay}')
+                        
+                        # Add fill_between for standard deviation
+                        ax.fill_between(steps, values - std_values, values + std_values, color=color, alpha=0.2)
+                    
+                    ax.grid(True, linestyle='--', alpha=0.7)
+                    
+                    # Add legend to the first subplot for each metric pair
+                    if idx == 0:
+                        ax.legend(loc='best')
             
             # Adjust layout before adding colorbar
             fig.tight_layout(rect=[0, 0.05, 1, 0.95])
