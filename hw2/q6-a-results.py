@@ -60,8 +60,8 @@ def plot_metrics_over_time(all_results, figsize=(12, 12)):
     
     # Metrics mapping
     metrics_split_mapping = [
-        ('train', 'loss', 'Training Loss', 0, 0, True),
-        ('test', 'loss', 'Validation Loss', 0, 1, True),
+        ('train', 'loss', 'Training Loss', 0, 0, False),
+        ('test', 'loss', 'Validation Loss', 0, 1, False),
         ('train', 'accuracy', 'Training Accuracy', 1, 0, False),
         ('test', 'accuracy', 'Validation Accuracy', 1, 1, False)
     ]

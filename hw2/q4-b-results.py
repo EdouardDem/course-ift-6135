@@ -39,7 +39,7 @@ def load_results(model_name, seeds):
     
     try:
         # Use load_and_combine_results to get combined statistics across seeds
-        results = load_and_combine_results(base_dir, seeds)
+        results = load_and_combine_results(base_dir, seeds, should_compute_extrema=False)
         
         if results is None:
             print(f"No results found for {model_name}")

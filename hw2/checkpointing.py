@@ -297,7 +297,7 @@ def load_results(base_dir, seed):
     """
     return torch.load(base_dir / f"seed={seed}/0/test.pth")
 
-def load_and_combine_results(base_dir, seeds):
+def load_and_combine_results(base_dir, seeds, should_compute_extrema=True):
     """
     Load the results from the given directory and combine them into a single dictionary.
     """
@@ -323,7 +323,6 @@ def load_and_combine_results(base_dir, seeds):
             results[split][metric] = [r[split][metric] for r in results_per_seed]
 
     # Is batch reduction is none, we can't compute the extrema
-    should_compute_extrema = "loss_by_ordre_2" not in results["train"] or results["train"]["loss_by_order_2"] is not None
     if not should_compute_extrema:
         print("Batch reduction is none, extrema can't be computed")
     results["extrema"] = get_extrema_performance_steps_per_trials(results) if should_compute_extrema else None
