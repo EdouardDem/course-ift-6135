@@ -9,9 +9,10 @@ import sys
 from data import get_arithmetic_dataset, BOS_TOKEN
 from torch.utils.data import DataLoader
 import seaborn as sns
+from gpt import GPT  # Import GPT model class
 
 # Configuration
-model_path = Path("logs/q8/model=gpt-optimizer=adamw-n_steps=10000/seed=42/0/model.pth")
+model_path = Path("logs/q8/model=gpt-optimizer=adamw-n_steps=10000-save_model_step=20000/seed=0/0/model.pth")
 results_dir = Path("results/q8")
 os.makedirs(results_dir, exist_ok=True)
 
@@ -28,18 +29,71 @@ def load_model(model_path):
     --------
     model : torch.nn.Module
         The loaded GPT model
+    container : dict
+        The original loaded container
     """
     if not model_path.exists():
         raise FileNotFoundError(f"Model file not found at {model_path}")
     
-    # Load the model container (includes model, tokenizer, etc.)
+    # Load the model container
     container = torch.load(model_path, map_location=torch.device('cpu'))
-    model = container['model']
+    
+    # Extract model parameters from the state dict
+    state_dict = container.get('model_state_dict', container)  # Try both keys
+    
+    # Create a new GPT model instance
+    # We need to extract model hyperparameters from the state dict
+    # Examine keys to determine model structure
+    
+    # Extract hyperparameters from state dict
+    # Number of layers = how many blocks in decoder
+    block_keys = [k for k in state_dict.keys() if 'decoder.blocks' in k]
+    unique_blocks = set([k.split('.')[2] for k in block_keys if len(k.split('.')) > 2])
+    num_layers = len(unique_blocks)
+    
+    # Number of heads - need to determine from state dict dimension
+    # W_Q weight shape is (embedding_size, embedding_size)
+    # and embedding_size should be divisible by num_heads
+    embedding_weight = state_dict.get('embedding.tokens.weight', None)
+    if embedding_weight is None:
+        # If not found, try the first layer's Q projection weight
+        w_q_weight_key = [k for k in state_dict.keys() if 'W_Q.weight' in k][0]
+        embedding_size = state_dict[w_q_weight_key].shape[0]
+    else:
+        embedding_size = embedding_weight.shape[1]
+    
+    # Reasonable default values for GPT model
+    num_heads = 4  # Common value, can be adjusted
+    vocabulary_size = state_dict['classifier.weight'].shape[0]
+    sequence_length = 6  # A reasonable default
+    
+    # Create GPT model instance
+    model = GPT(
+        num_heads=num_heads,
+        num_layers=num_layers,
+        embedding_size=embedding_size,
+        vocabulary_size=vocabulary_size,
+        sequence_length=sequence_length,
+        multiplier=4,
+        dropout=0.0,
+        non_linearity="gelu",
+        padding_index=None,
+        bias_attention=True,
+        bias_classifier=True,
+        share_embeddings=False
+    )
+
+    model.to(torch.device('cpu'))
+    
+    # Load the state dictionary into the model
+    model.load_state_dict(state_dict)
     
     # Set model to evaluation mode
     model.eval()
     
     print(f"Model loaded from {model_path}")
+    print(f"Model config: layers={num_layers}, embedding_size={embedding_size}, vocab_size={vocabulary_size}")
+    
     return model, container
 
 def get_samples_from_dataset(num_samples=2):
@@ -98,19 +152,8 @@ def run_model_with_attention(model, inputs, masks, tokenizer):
         Model outputs including attentions
     """
     with torch.no_grad():
-        # Run the model with output_attentions=True to get attention weights
-        logits, (hidden_states, attentions) = model(
-            inputs, 
-            # attention_mask=masks, 
-            # output_hidden_states=True, 
-            # output_attentions=True
-        )
-    
-    # Convert attentions from tuple to tensor if necessary
-    if isinstance(attentions, tuple):
-        attentions = torch.stack(attentions)
-    
-    print(f"Model run successfully. Attention shape: {attentions.shape}")
+        # Run the model and get outputs including attention weights
+        logits, (hidden_states, attentions) = model(inputs)
     
     # Print the input sequences
     for i in range(inputs.shape[0]):
@@ -118,6 +161,8 @@ def run_model_with_attention(model, inputs, masks, tokenizer):
         valid_tokens = tokens[masks[i].bool()]
         decoded = tokenizer.decode(valid_tokens)
         print(f"Sample {i+1}: {decoded}")
+    
+    print(f"Model run successfully. Attention shape: {attentions.shape}")
     
     return logits, hidden_states, attentions
 
@@ -222,4 +267,6 @@ if __name__ == "__main__":
         print("\nAttention weight visualization completed successfully!")
         
     except Exception as e:
-        print(f"Error: {e}") 
+        print(f"Error: {e}")
+        import traceback
+        traceback.print_exc() 

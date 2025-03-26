@@ -185,7 +185,7 @@ async function question8() {
         optimizer: 'adamw',
         n_steps: steps,
         save_model_step: steps * 2,
-    }, 'q1', true, true, [0]);
+    }, 'q8', true, true, [0]);
 }
 
 await question1();
