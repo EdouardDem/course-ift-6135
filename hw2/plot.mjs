@@ -13,3 +13,7 @@ await $`python q4-b-results.py`;
 await $`python q5-a-results.py`;
 await $`python q5-b-results.py`;
 await $`python q6-a-results.py`;
+await $`python q6-b-results.py`;
+await $`python q7-a-results.py`;
+await $`python q7-b-results.py`;
+await $`python q8-results.py`;
