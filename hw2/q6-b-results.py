@@ -150,10 +150,10 @@ def extract_metrics_for_batch_alpha_grid(all_results):
         'min_test_loss': 'Validation Loss',
         'max_train_accuracy': 'Training Accuracy',
         'max_test_accuracy': 'Validation Accuracy',
-        'min_train_loss_step': 'Time to Final Training Loss',
-        'min_test_loss_step': 'Time to Final Validation Loss',
-        'max_train_accuracy_step': 'Time to Final Training Accuracy',
-        'max_test_accuracy_step': 'Time to Final Validation Accuracy'
+        'min_train_loss_step': 'Time to Best Training Loss',
+        'min_test_loss_step': 'Time to Best Validation Loss',
+        'max_train_accuracy_step': 'Time to Best Training Accuracy',
+        'max_test_accuracy_step': 'Time to Best Validation Accuracy'
     }
     
     for model_name in all_results:
@@ -205,10 +205,10 @@ def plot_metrics_vs_batch_alpha(metrics_data, figsize=(18, 15)):
         ('min_test_loss', 'Validation Loss', 0, 1, True),
         ('max_train_accuracy', 'Training Accuracy', 1, 0, False),
         ('max_test_accuracy', 'Validation Accuracy', 1, 1, False),
-        ('min_train_loss_step', 'Time to Final Training Loss', 2, 0, False),
-        ('min_test_loss_step', 'Time to Final Validation Loss', 2, 1, False),
-        ('max_train_accuracy_step', 'Time to Final Training Accuracy', 3, 0, False),
-        ('max_test_accuracy_step', 'Time to Final Validation Accuracy', 3, 1, False)
+        ('min_train_loss_step', 'Time to Best Training Loss', 2, 0, False),
+        ('min_test_loss_step', 'Time to Best Validation Loss', 2, 1, False),
+        ('max_train_accuracy_step', 'Time to Best Training Accuracy', 3, 0, False),
+        ('max_test_accuracy_step', 'Time to Best Validation Accuracy', 3, 1, False)
     ]
     
     # Set up a figure with subplots for each model
@@ -314,8 +314,8 @@ def plot_combined_validation_metrics(metrics_data, figsize=(15, 12)):
     validation_metrics = [
         ('min_test_loss', 'Validation Loss', 0, 0, True),
         ('max_test_accuracy', 'Validation Accuracy', 0, 1, False),
-        ('min_test_loss_step', 'Time to Final Validation Loss', 1, 0, False),
-        ('max_test_accuracy_step', 'Time to Final Validation Accuracy', 1, 1, False)
+        ('min_test_loss_step', 'Time to Best Validation Loss', 1, 0, False),
+        ('max_test_accuracy_step', 'Time to Best Validation Accuracy', 1, 1, False)
     ]
     
     # Colors for models
