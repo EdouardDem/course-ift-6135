@@ -115,21 +115,39 @@ def get_loss_and_accuracy(logits, targets, eq_positions, mask, reduction='mean')
 ########################################################################################
   
 @torch.no_grad()
-def eval_model(model, loader, device) :
+def eval_model(model, loader, device, reduction='mean') :
     model.eval()
     acc = 0
     loss = 0
     n = 0
     l2_norm = 0
+
+    if reduction == 'none':
+        acc_by_order_2 = 0
+        acc_by_order_3 = 0
+        loss_by_order_2 = 0
+        loss_by_order_3 = 0
+        n_2 = 0
+        n_3 = 0
+
     for batch in loader:
         batch_x, batch_y, eq_positions, mask = batch # (B, S), (B, S), (B,), (B, S)
         batch_x, batch_y = batch_x.to(device), batch_y.to(device)
         eq_positions, mask = eq_positions.to(device), mask.to(device)
         logits, *_ = model(batch_x) # (B, S, V)
-        batch_loss, batch_acc = get_loss_and_accuracy(logits, batch_y, eq_positions, mask)
+        batch_loss, batch_acc = get_loss_and_accuracy(logits, batch_y, eq_positions, mask, reduction=reduction)
         n += batch_x.shape[0]
         loss += batch_loss.item() * batch_x.shape[0]
         acc += batch_acc * batch_x.shape[0]
+        if reduction == 'none':
+            eq_positions_2 = eq_positions == 3
+            eq_positions_3 = eq_positions == 5
+            loss_by_order_2 += batch_loss[eq_positions_2].mean() * len(eq_positions_2)
+            loss_by_order_3 += batch_loss[eq_positions_3].mean() * len(eq_positions_3)
+            acc_by_order_2 += batch_acc[eq_positions_2].mean() * len(eq_positions_2)
+            acc_by_order_3 += batch_acc[eq_positions_3].mean() * len(eq_positions_3)
+            n_2 += len(eq_positions_2)
+            n_3 += len(eq_positions_3)
         
         # Calculate L2 norm properly by summing squares of all parameters and taking sqrt
         params_norm = torch.sqrt(sum(p.pow(2).sum() for p in model.parameters()))
@@ -139,7 +157,19 @@ def eval_model(model, loader, device) :
     # You can add more metrics in the dictionary (e.g., l2 norm of the parameters, etc.) 
     ##########
 
-    return {"loss" : loss / n, "accuracy": acc / n, "l2_norm": l2_norm / n}
+    all_metrics = {
+        "loss" : loss / n, 
+        "accuracy": acc / n, 
+        "l2_norm": l2_norm / n, 
+        "reduction": reduction,
+    }
+    if reduction == 'none':
+        all_metrics["loss_by_order_2"] = loss_by_order_2 / n_2
+        all_metrics["loss_by_order_3"] = loss_by_order_3 / n_3
+        all_metrics["acc_by_order_2"] = acc_by_order_2 / n_2
+        all_metrics["acc_by_order_3"] = acc_by_order_3 / n_3
+    
+    return all_metrics
     
 ########################################################################################
 ########################################################################################
@@ -149,7 +179,7 @@ def train(
     model, train_loader, train_loader_for_eval, test_loader, optimizer, scheduler, device, 
     exp_name:str, checkpoint_path:str,
     n_steps:int, eval_first:int=0, eval_period:int=1, print_step:int=1, save_model_step:int=1,  save_statistic_step:int=1,  
-    verbose=True,
+    verbose=True, reduction='mean'
     ):
     """
     model (nn.Module) : The model to train
@@ -194,11 +224,11 @@ def train(
 
     ##############
 
-    train_statistics = eval_model(model, train_loader_for_eval, device)
+    train_statistics = eval_model(model, train_loader_for_eval, device, reduction=reduction)
     for k, v in train_statistics.items():
         all_metrics["train"][k].append(ensure_cpu_tensor(v))
 
-    test_statistics = eval_model(model, test_loader, device)
+    test_statistics = eval_model(model, test_loader, device, reduction=reduction)
     for k, v in test_statistics.items():
         all_metrics["test"][k].append(ensure_cpu_tensor(v))
 
@@ -258,11 +288,11 @@ def train(
             # ==========================
               
             if cur_step in [1, n_steps] or cur_step % eval_period == 0 or cur_step <= eval_first:
-                train_statistics = eval_model(model, train_loader_for_eval, device)
+                train_statistics = eval_model(model, train_loader_for_eval, device, reduction=reduction)
                 for k, v in train_statistics.items():
                     all_metrics["train"][k].append(ensure_cpu_tensor(v))
 
-                test_statistics = eval_model(model, test_loader, device)
+                test_statistics = eval_model(model, test_loader, device, reduction=reduction)
                 for k, v in test_statistics.items():
                     all_metrics["test"][k].append(ensure_cpu_tensor(v))
 
@@ -316,11 +346,11 @@ def train(
         }
         torch.save(state, f"{checkpoint_path}/{exp_name}_state_{cur_step}_acc={test_statistics['accuracy']}_loss={test_statistics['loss']}.pth")
     
-    train_statistics = eval_model(model, train_loader_for_eval, device)
+    train_statistics = eval_model(model, train_loader_for_eval, device, reduction=reduction)
     for k, v in train_statistics.items():
         all_metrics["train"][k].append(ensure_cpu_tensor(v))
 
-    test_statistics = eval_model(model, test_loader, device)
+    test_statistics = eval_model(model, test_loader, device, reduction=reduction)
     for k, v in test_statistics.items():
         all_metrics["test"][k].append(ensure_cpu_tensor(v))
 

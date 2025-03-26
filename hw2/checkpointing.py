@@ -306,12 +306,15 @@ def load_and_combine_results(base_dir, seeds):
         results_per_seed.append(load_results(base_dir, seed))
 
     splits = ['train', 'test']
-    metrics = ['loss', 'accuracy', 'l2_norm']
+    metrics = [
+        'loss', 'accuracy', 'l2_norm', 
+        'loss_by_order_2', 'loss_by_order_3', 'acc_by_order_2', 'acc_by_order_3'
+    ]
 
     # Merge results from all seeds
     results = {}
     results['all_steps'] = [r['all_steps'] for r in results_per_seed]
-    results['steps_epoch'] = [r['steps_epoch'] for r in results_per_seed]
+    results['steps_epoch'] = [r['steps_epoch'] for r in results_per_seed]   
     for split in splits:
         results[split] = {}
         for metric in metrics:

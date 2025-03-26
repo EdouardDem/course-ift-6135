@@ -187,6 +187,13 @@ if __name__ == "__main__":
         default=10**3,
         help="save the statistics every n steps (default: %(default)s). 0 means no saving.",
     )
+    training.add_argument(
+        "--reduction",
+        type=str,
+        default="mean",
+        choices=["mean", "sum", "none"],
+        help="reduction method for the loss (default: %(default)s).",
+    )
 
     # Experiment & Miscellaneous
     misc = parser.add_argument_group("Experiment & Miscellaneous")

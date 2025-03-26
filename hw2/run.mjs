@@ -94,21 +94,28 @@ async function question3() {
 async function question4() {
     const operation_orders = ['2,3'];
     const p = 11;
+    const reductions = [undefined, 'none'];
     for (const operation_order of operation_orders) {
-        await run({
-            model: 'gpt',
-            optimizer: 'adamw',
-            n_steps: 10000,
-            operation_orders: operation_order,
-            p,
-        }, `q4`);
-        await run({
-            model: 'lstm',
-            optimizer: 'adamw',
-            n_steps: 10000,
-            operation_orders: operation_order,
-            p,
-        }, `q4`);
+        for (const reduction of reductions) {
+            const args = {
+                optimizer: 'adamw',
+                n_steps: 10000,
+                operation_orders: operation_order,
+                p,
+            }
+            if (reduction) {
+                args.reduction = reduction;
+            }
+
+            await run({
+                model: 'gpt',
+                ...args,
+            }, `q4`);
+            await run({
+                model: 'lstm',
+                ...args,
+            }, `q4`);
+        }
     }
 }
 
