@@ -306,7 +306,7 @@ def load_and_combine_results(base_dir, seeds):
         results_per_seed.append(load_results(base_dir, seed))
 
     splits = ['train', 'test']
-    metrics = ['loss', 'accuracy']
+    metrics = ['loss', 'accuracy', 'l2_norm']
 
     # Merge results from all seeds
     results = {}
@@ -321,6 +321,8 @@ def load_and_combine_results(base_dir, seeds):
 
     for split in splits:
         for metric in metrics:
+            if not metric in results[split]:
+                continue
             metric_values = results[split][metric]
             mean = np.mean(metric_values, axis=0)
             std = np.std(metric_values, axis=0)
