@@ -213,7 +213,7 @@ def plot_metrics_vs_architecture(metrics_data, figsize=(15, 20)):
         
         # Prepare color map for L values
         unique_L = sorted(set(L_values))
-        cmap = plt.cm.brg
+        cmap = plt.cm.viridis
         norm = mcolors.Normalize(vmin=min(unique_L), vmax=max(unique_L))
         
         # Get all unique d values and sort them for x-axis
@@ -303,7 +303,7 @@ def plot_metrics_vs_params(metrics_data, figsize=(15, 20)):
         unique_L = sorted(set(L_values))
         unique_d = sorted(set(d_values))
         
-        L_cmap = plt.cm.brg
+        L_cmap = plt.cm.viridis
         L_norm = mcolors.Normalize(vmin=min(unique_L), vmax=max(unique_L))
         
         # Metrics to plot

@@ -63,7 +63,7 @@ def plot_metrics_by_layer_count(model_name, num_layers, seeds, figsize=(15, 12))
     # We'll use log2 scale for embedding sizes as requested
     log2_embedding_sizes = [np.log2(size) for size in embedding_sizes]
     norm = mcolors.Normalize(vmin=min(log2_embedding_sizes), vmax=max(log2_embedding_sizes))
-    cmap = plt.cm.brg
+    cmap = plt.cm.viridis
     
     # Load data for each embedding size
     embedding_results = {}
