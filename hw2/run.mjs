@@ -92,37 +92,24 @@ async function question3() {
 }
 
 async function question4() {
-    await run({
-        model: 'gpt',
-        optimizer: 'adamw',
-        n_steps: 10000,
-        operation_orders: '2,3',
-        p: 11,
-    }, 'q4');
-
-    await run({
-        model: 'lstm',
-        optimizer: 'adamw',
-        n_steps: 10000,
-        operation_orders: '2,3',
-        p: 11,
-    }, 'q4');
-
-    await run({
-        model: 'gpt',
-        optimizer: 'adamw',
-        n_steps: 10000,
-        operation_orders: '2',
-        p: 11,
-    }, 'q4');
-
-    await run({
-        model: 'lstm',
-        optimizer: 'adamw',
-        n_steps: 10000,
-        operation_orders: '3',
-        p: 11,
-    }, 'q4');
+    const operation_orders = ['2,3'];
+    const p = 11;
+    for (const operation_order of operation_orders) {
+        await run({
+            model: 'gpt',
+            optimizer: 'adamw',
+            n_steps: 10000,
+            operation_orders: operation_order,
+            p,
+        }, `q4`);
+        await run({
+            model: 'lstm',
+            optimizer: 'adamw',
+            n_steps: 10000,
+            operation_orders: operation_order,
+            p,
+        }, `q4`);
+    }
 }
 
 async function question5() {
@@ -184,9 +171,20 @@ async function question7() {
     }
 }
 
+async function question8() {
+    const steps = 10000;
+    await run({
+        model: 'gpt',
+        optimizer: 'adamw',
+        n_steps: steps,
+        save_model_step: steps * 2,
+    }, 'q1', true, true, [0]);
+}
+
 await question1();
 await question3();
 await question4();
 await question5();
 await question6();
 await question7();
+await question8();
