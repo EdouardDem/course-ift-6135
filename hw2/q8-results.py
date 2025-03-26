@@ -39,33 +39,12 @@ def load_model(model_path):
     container = torch.load(model_path, map_location=torch.device('cpu'))
     
     # Extract model parameters from the state dict
-    state_dict = container.get('model_state_dict', container)  # Try both keys
-    
-    # Create a new GPT model instance
-    # We need to extract model hyperparameters from the state dict
-    # Examine keys to determine model structure
-    
-    # Extract hyperparameters from state dict
-    # Number of layers = how many blocks in decoder
-    block_keys = [k for k in state_dict.keys() if 'decoder.blocks' in k]
-    unique_blocks = set([k.split('.')[2] for k in block_keys if len(k.split('.')) > 2])
-    num_layers = len(unique_blocks)
-    
-    # Number of heads - need to determine from state dict dimension
-    # W_Q weight shape is (embedding_size, embedding_size)
-    # and embedding_size should be divisible by num_heads
-    embedding_weight = state_dict.get('embedding.tokens.weight', None)
-    if embedding_weight is None:
-        # If not found, try the first layer's Q projection weight
-        w_q_weight_key = [k for k in state_dict.keys() if 'W_Q.weight' in k][0]
-        embedding_size = state_dict[w_q_weight_key].shape[0]
-    else:
-        embedding_size = embedding_weight.shape[1]
-    
-    # Reasonable default values for GPT model
-    num_heads = 4  # Common value, can be adjusted
-    vocabulary_size = state_dict['classifier.weight'].shape[0]
-    sequence_length = 6  # A reasonable default
+    state_dict = container.get('model_state_dict', container)
+    num_layers = 2
+    embedding_size=128
+    num_heads = 4
+    vocabulary_size = 36
+    sequence_length = 6
     
     # Create GPT model instance
     model = GPT(
@@ -198,13 +177,17 @@ def visualize_attention_weights(attentions, inputs, masks, tokenizer, save_dir):
         token_strings = [tokenizer.itos[token.item()] for token in valid_tokens]
         
         # Create a grid of plots: num_layers x num_heads
-        fig, axes = plt.subplots(num_layers, num_heads, 
-                                figsize=(num_heads * 2.5, num_layers * 2.5),
-                                squeeze=False)
+        # Add more vertical space between rows with gridspec_kw
+        fig, axes = plt.subplots(
+            num_layers, num_heads,
+            figsize=(num_heads * 4, num_layers * 4.5),  # Increased height to accommodate bottom colorbar
+            squeeze=False,
+            gridspec_kw={'hspace': 0.4, 'wspace': 0.2}  # Add more vertical space between rows
+        )
         
         # Set the title for the entire figure
         fig.suptitle(f"Attention Weights - Sample {sample_idx + 1}: {tokenizer.decode(valid_tokens)}", 
-                    fontsize=16)
+                     fontsize=20, y=0.98)  # Move title up a bit
         
         # Plot each layer and head
         for layer in range(num_layers):
@@ -219,33 +202,36 @@ def visualize_attention_weights(attentions, inputs, masks, tokenizer, save_dir):
                 im = ax.imshow(attn, cmap='viridis', vmin=0, vmax=1)
                 
                 # Set title, labels and ticks
-                ax.set_title(f"Layer {layer+1}, Head {head+1}", fontsize=10)
+                ax.set_title(f"Layer {layer}, Head {head}", fontsize=14)
                 
                 # Only label axes on the left and bottom edges
                 if head == 0:
-                    ax.set_ylabel("Query")
+                    ax.set_ylabel("Query", fontsize=12)
                 if layer == num_layers - 1:
-                    ax.set_xlabel("Key")
+                    ax.set_xlabel("Key", fontsize=12)
                 
                 # Set tick positions and labels
                 ax.set_xticks(np.arange(valid_seq_len))
                 ax.set_yticks(np.arange(valid_seq_len))
-                ax.set_xticklabels(token_strings, rotation=90, fontsize=8)
-                ax.set_yticklabels(token_strings, fontsize=8)
+                ax.set_xticklabels(token_strings, rotation=90, fontsize=10)
+                ax.set_yticklabels(token_strings, fontsize=10)
                 
                 # Add grid to make it easier to see which cells correspond to which tokens
                 ax.grid(visible=False)
         
-        # Add a colorbar
-        cbar = fig.colorbar(im, ax=axes.ravel().tolist(), shrink=0.7)
-        cbar.set_label('Attention Weight')
+        # Adjust layout before adding colorbar
+        plt.tight_layout(rect=[0, 0.06, 1, 0.95])  # Reserve space at the bottom for colorbar
         
-        # Adjust layout
-        plt.tight_layout(rect=[0, 0, 1, 0.97])  # Make room for the suptitle
+        # Add a horizontal colorbar at the bottom
+        cbar_ax = fig.add_axes([0.15, 0.02, 0.7, 0.02])  # [left, bottom, width, height]
+        cbar = fig.colorbar(im, cax=cbar_ax, orientation='horizontal')
+        cbar.set_label('Attention Weight', fontsize=14)
+        cbar.ax.tick_params(labelsize=12)
+        cbar.ax.xaxis.set_ticks_position('bottom')
         
         # Save the figure
-        fig_path = save_dir / f"sample_{sample_idx + 1}_attention.png"
-        plt.savefig(fig_path, dpi=300, bbox_inches='tight')
+        fig_path = save_dir / f"sample_{sample_idx}_attention.png"
+        plt.savefig(fig_path, dpi=400, bbox_inches='tight')
         plt.close()
         
         print(f"Attention visualization for sample {sample_idx + 1} saved to {fig_path}")
