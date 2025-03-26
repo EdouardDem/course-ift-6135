@@ -48,7 +48,7 @@ if __name__ == "__main__":
         choices=[2, 3, [2, 3]],
         default=[2],
         help="list of orders of operations to use (default: %(default)s).",
-        type=lambda x: [int(i) for i in x.split(',')] if isinstance(x, str) else x,
+        type=lambda x: [int(i) for i in x.split(',')] if isinstance(x, str) and ',' in x else int(x),
     )
     data.add_argument(
         "--train_batch_size",

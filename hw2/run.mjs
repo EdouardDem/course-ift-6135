@@ -108,23 +108,21 @@ async function question4() {
         p: 11,
     }, 'q4');
 
-    // await run({
-    //     model: 'gpt',
-    //     optimizer: 'adamw',
-    //     n_steps: 10000,
-    //     operation_orders: '2,3',
-    //     p: 11,
-    //     reduction: 'none',
-    // }, 'q4');
+    await run({
+        model: 'gpt',
+        optimizer: 'adamw',
+        n_steps: 10000,
+        operation_orders: '2',
+        p: 11,
+    }, 'q4');
 
-    // await run({
-    //     model: 'lstm',
-    //     optimizer: 'adamw',
-    //     n_steps: 10000,
-    //     operation_orders: '2,3',
-    //     p: 11,
-    //     reduction: 'none',
-    // }, 'q4');
+    await run({
+        model: 'lstm',
+        optimizer: 'adamw',
+        n_steps: 10000,
+        operation_orders: '3',
+        p: 11,
+    }, 'q4');
 }
 
 async function question5() {
