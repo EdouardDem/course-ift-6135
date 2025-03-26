@@ -99,7 +99,7 @@ def plot_operation_metrics(model_name, results, figsize=(12, 10)):
         ax.fill_between(steps[:min_len], 
                         y_mean[:min_len] - y_std[:min_len], 
                         y_mean[:min_len] + y_std[:min_len], 
-                        color='b', alpha=0.3)
+                        color='b', alpha=0.15)
     
     # Plot ternary (order 3) loss
     if 'train' in results and 'loss_by_order_3' in results['train']:
@@ -111,7 +111,7 @@ def plot_operation_metrics(model_name, results, figsize=(12, 10)):
         ax.fill_between(steps[:min_len], 
                         y_mean[:min_len] - y_std[:min_len], 
                         y_mean[:min_len] + y_std[:min_len], 
-                        color='r', alpha=0.3)
+                        color='r', alpha=0.15)
     
     ax.grid(True, linestyle='--', alpha=0.7)
     ax.legend()
@@ -132,7 +132,7 @@ def plot_operation_metrics(model_name, results, figsize=(12, 10)):
         ax.fill_between(steps[:min_len], 
                         y_mean[:min_len] - y_std[:min_len], 
                         y_mean[:min_len] + y_std[:min_len], 
-                        color='b', alpha=0.3)
+                        color='b', alpha=0.15)
     
     # Plot ternary (order 3) loss
     if 'test' in results and 'loss_by_order_3' in results['test']:
@@ -144,7 +144,7 @@ def plot_operation_metrics(model_name, results, figsize=(12, 10)):
         ax.fill_between(steps[:min_len], 
                         y_mean[:min_len] - y_std[:min_len], 
                         y_mean[:min_len] + y_std[:min_len], 
-                        color='r', alpha=0.3)
+                        color='r', alpha=0.15)
     
     ax.grid(True, linestyle='--', alpha=0.7)
     ax.legend()
@@ -165,7 +165,7 @@ def plot_operation_metrics(model_name, results, figsize=(12, 10)):
         ax.fill_between(steps[:min_len], 
                         y_mean[:min_len] - y_std[:min_len], 
                         y_mean[:min_len] + y_std[:min_len], 
-                        color='b', alpha=0.3)
+                        color='b', alpha=0.15)
     
     # Plot ternary (order 3) accuracy
     if 'train' in results and 'acc_by_order_3' in results['train']:
@@ -177,7 +177,7 @@ def plot_operation_metrics(model_name, results, figsize=(12, 10)):
         ax.fill_between(steps[:min_len], 
                         y_mean[:min_len] - y_std[:min_len], 
                         y_mean[:min_len] + y_std[:min_len], 
-                        color='r', alpha=0.3)
+                        color='r', alpha=0.15)
     
     ax.grid(True, linestyle='--', alpha=0.7)
     ax.legend()
@@ -198,7 +198,7 @@ def plot_operation_metrics(model_name, results, figsize=(12, 10)):
         ax.fill_between(steps[:min_len], 
                         y_mean[:min_len] - y_std[:min_len], 
                         y_mean[:min_len] + y_std[:min_len], 
-                        color='b', alpha=0.3)
+                        color='b', alpha=0.15)
     
     # Plot ternary (order 3) accuracy
     if 'test' in results and 'acc_by_order_3' in results['test']:
@@ -210,7 +210,7 @@ def plot_operation_metrics(model_name, results, figsize=(12, 10)):
         ax.fill_between(steps[:min_len], 
                         y_mean[:min_len] - y_std[:min_len], 
                         y_mean[:min_len] + y_std[:min_len], 
-                        color='r', alpha=0.3)
+                        color='r', alpha=0.15)
     
     ax.grid(True, linestyle='--', alpha=0.7)
     ax.legend()
@@ -303,7 +303,7 @@ def plot_all_models_comparison(model_results, figsize=(15, 12)):
                     ax.fill_between(steps[:min_len], 
                                    y_mean[:min_len] - y_std[:min_len], 
                                    y_mean[:min_len] + y_std[:min_len], 
-                                   color=color, alpha=0.2)
+                                   color=color, alpha=0.15)
                     
                     has_data = True
         
@@ -391,7 +391,7 @@ def plot_metrics_by_operation_order(model_results, figsize=(15, 10)):
                     ax.fill_between(steps[:min_len], 
                                    y_mean[:min_len] - y_std[:min_len], 
                                    y_mean[:min_len] + y_std[:min_len], 
-                                   color=color, alpha=0.3)
+                                   color=color, alpha=0.15)
                     
                     has_data = True
             

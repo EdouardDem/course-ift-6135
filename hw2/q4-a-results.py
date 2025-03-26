@@ -53,7 +53,7 @@ def plot_metrics_over_time(model_name, seeds, figsize=(12, 10)):
             y_mean = results['train']['loss']['mean']
             y_std = results['train']['loss']['std']
             axs[0, 0].plot(steps, y_mean, 'b-', label='Train Loss')
-            axs[0, 0].fill_between(steps, y_mean - y_std, y_mean + y_std, color='b', alpha=0.3)
+            axs[0, 0].fill_between(steps, y_mean - y_std, y_mean + y_std, color='b', alpha=0.15)
             axs[0, 0].set_title('Training Loss')
             axs[0, 0].set_xlabel('Training Steps (t)')
             axs[0, 0].set_ylabel('Loss')
@@ -65,7 +65,7 @@ def plot_metrics_over_time(model_name, seeds, figsize=(12, 10)):
             y_mean = results['test']['loss']['mean']
             y_std = results['test']['loss']['std']
             axs[0, 1].plot(steps, y_mean, 'r-', label='Validation Loss')
-            axs[0, 1].fill_between(steps, y_mean - y_std, y_mean + y_std, color='r', alpha=0.3)
+            axs[0, 1].fill_between(steps, y_mean - y_std, y_mean + y_std, color='r', alpha=0.15)
             axs[0, 1].set_title('Validation Loss')
             axs[0, 1].set_xlabel('Training Steps (t)')
             axs[0, 1].set_ylabel('Loss')
@@ -77,7 +77,7 @@ def plot_metrics_over_time(model_name, seeds, figsize=(12, 10)):
             y_mean = results['train']['accuracy']['mean']
             y_std = results['train']['accuracy']['std']
             axs[1, 0].plot(steps, y_mean, 'g-', label='Train Accuracy')
-            axs[1, 0].fill_between(steps, y_mean - y_std, y_mean + y_std, color='g', alpha=0.3)
+            axs[1, 0].fill_between(steps, y_mean - y_std, y_mean + y_std, color='g', alpha=0.15)
             axs[1, 0].set_title('Training Accuracy')
             axs[1, 0].set_xlabel('Training Steps (t)')
             axs[1, 0].set_ylabel('Accuracy')
@@ -89,7 +89,7 @@ def plot_metrics_over_time(model_name, seeds, figsize=(12, 10)):
             y_mean = results['test']['accuracy']['mean']
             y_std = results['test']['accuracy']['std']
             axs[1, 1].plot(steps, y_mean, 'm-', label='Validation Accuracy')
-            axs[1, 1].fill_between(steps, y_mean - y_std, y_mean + y_std, color='m', alpha=0.3)
+            axs[1, 1].fill_between(steps, y_mean - y_std, y_mean + y_std, color='m', alpha=0.15)
             axs[1, 1].set_title('Validation Accuracy')
             axs[1, 1].set_xlabel('Training Steps (t)')
             axs[1, 1].set_ylabel('Accuracy')
@@ -160,7 +160,7 @@ def plot_model_comparison(seeds, figsize=(15, 10)):
                         y_std = results[dataset][metric]['std']
                         
                         ax.plot(steps, y_mean, color=colors[model_name], label=f'{model_name.upper()}')
-                        ax.fill_between(steps, y_mean - y_std, y_mean + y_std, color=colors[model_name], alpha=0.3)
+                        ax.fill_between(steps, y_mean - y_std, y_mean + y_std, color=colors[model_name], alpha=0.15)
                         has_data = True
                 
                 except Exception as e:
@@ -270,7 +270,7 @@ def plot_combined_comparison(seeds, figsize=(15, 12)):
                 y_std = results[dataset][metric]['std']
                 
                 ax.plot(steps, y_mean, color=colors[model_name], label=f'{model_name.upper()}')
-                ax.fill_between(steps, y_mean - y_std, y_mean + y_std, color=colors[model_name], alpha=0.3)
+                ax.fill_between(steps, y_mean - y_std, y_mean + y_std, color=colors[model_name], alpha=0.15)
                 has_data = True
         
         # Add legend if we have data

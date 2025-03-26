@@ -114,7 +114,7 @@ def plot_metrics_over_time(all_results, figsize=(10, 18)):
                     line, = ax.plot(steps, values, '-', color=color, label=f'weight_decay={weight_decay}')
                     
                     # Add fill_between for standard deviation
-                    ax.fill_between(steps, values - std_values, values + std_values, color=color, alpha=0.2)
+                    ax.fill_between(steps, values - std_values, values + std_values, color=color, alpha=0.15)
                 
                 ax.grid(True, linestyle='--', alpha=0.7)
                 ax.legend(loc='best')
@@ -169,7 +169,7 @@ def plot_metrics_over_time(all_results, figsize=(10, 18)):
                         line, = ax.plot(steps, values, '-', color=color, label=f'weight_decay={weight_decay}')
                         
                         # Add fill_between for standard deviation
-                        ax.fill_between(steps, values - std_values, values + std_values, color=color, alpha=0.2)
+                        ax.fill_between(steps, values - std_values, values + std_values, color=color, alpha=0.15)
                     
                     ax.grid(True, linestyle='--', alpha=0.7)
                     

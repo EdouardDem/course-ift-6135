@@ -93,7 +93,7 @@ def plot_metrics_grid(model_name, seeds=["0", "42"], figsize=(15, 12)):
                     ax.plot(steps_plot, y_mean, color=colors[idx], label=f'r_train={r_train}')
                     
                     # Add error shading for standard deviation
-                    ax.fill_between(steps_plot, y_mean - y_std, y_mean + y_std, color=colors[idx], alpha=0.3)
+                    ax.fill_between(steps_plot, y_mean - y_std, y_mean + y_std, color=colors[idx], alpha=0.15)
                     
                     has_data_for_this_r = True
                 else:

@@ -62,7 +62,7 @@ def plot_model_metrics_grid(model_name, figsize=(15, 6), log_scale=False):
                 
                 ax.plot(steps, train_mean, 'b-', label=f'Train {title}')
                 ax.fill_between(steps, train_mean - train_std, train_mean + train_std, 
-                                color='blue', alpha=0.3)
+                                color='blue', alpha=0.15)
             else:
                 print(f"No training {metric_type} data found for {model_name}")
             
@@ -73,7 +73,7 @@ def plot_model_metrics_grid(model_name, figsize=(15, 6), log_scale=False):
                 
                 ax.plot(steps, val_mean, 'r-', label=f'Validation {title}')
                 ax.fill_between(steps, val_mean - val_std, val_mean + val_std, 
-                                color='red', alpha=0.3)
+                                color='red', alpha=0.15)
             else:
                 print(f"No validation {metric_type} data found for {model_name}")
             

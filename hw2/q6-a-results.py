@@ -122,7 +122,7 @@ def plot_metrics_over_time(all_results, figsize=(12, 12)):
                 line, = ax.plot(steps, y_mean, '-', color=color, label=f'B={batch_size}')
                 
                 # Add fill_between for standard deviation
-                ax.fill_between(steps, y_mean - y_std, y_mean + y_std, color=color, alpha=0.2)
+                ax.fill_between(steps, y_mean - y_std, y_mean + y_std, color=color, alpha=0.15)
             
             ax.grid(True, linestyle='--', alpha=0.7)
         

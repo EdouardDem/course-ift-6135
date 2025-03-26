@@ -38,7 +38,7 @@ def plot_loss_accs(
                 zs_mean, zs_std = np.mean(zs, axis=0), np.std(zs, axis=0)
                 #ax.errorbar(all_steps, zs_mean, yerr=zs_std, fmt=f'-', color=color_1, label=f"Train", lw=linewidth)
                 ax.plot(all_steps, zs_mean, '-', color=color_1, label=f"Train", lw=linewidth)
-                ax.fill_between(all_steps, zs_mean-zs_std, zs_mean+zs_std, color=color_1, alpha=0.2)
+                ax.fill_between(all_steps, zs_mean-zs_std, zs_mean+zs_std, color=color_1, alpha=0.15)
             else :  
                 for j, z in enumerate(zs) :
                     ax.plot(all_steps[j], z, '-', color=colors[j], label=f"Train", lw=linewidth/2)
@@ -47,7 +47,7 @@ def plot_loss_accs(
             if same_steps :
                 zs_mean, zs_std = np.mean(zs, axis=0), np.std(zs, axis=0)
                 ax.plot(all_steps, zs_mean, '-', color=color_2, label=f"Eval", lw=linewidth)
-                ax.fill_between(all_steps, zs_mean-zs_std, zs_mean+zs_std, color=color_2, alpha=0.2)
+                ax.fill_between(all_steps, zs_mean-zs_std, zs_mean+zs_std, color=color_2, alpha=0.15)
             else :  
                 for j, z in enumerate(zs) :
                     ax.plot(all_steps[j], z, '--', color=colors[j], label=f"Eval", lw=linewidth/2)
