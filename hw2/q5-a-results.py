@@ -123,16 +123,19 @@ def plot_metrics_by_layer_count(model_name, num_layers, seeds, figsize=(15, 12))
     handles, labels = axs[0, 0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='upper right', bbox_to_anchor=(0.99, 0.99), title="Embedding Size (d)")
     
-    # Add colorbar with log2 scale
-    cbar_ax = fig.add_axes([0.92, 0.15, 0.02, 0.7])  # [left, bottom, width, height]
-    cb = ColorbarBase(cbar_ax, cmap=cmap, norm=norm, orientation='vertical')
+    # Adjust layout before adding colorbar
+    fig.tight_layout(rect=[0, 0.05, 1, 0.96])  # Adjust for the suptitle and colorbar
+    
+    # Add horizontal colorbar at the bottom
+    cbar_ax = fig.add_axes([0.15, 0.03, 0.7, 0.02])  # [left, bottom, width, height]
+    cb = ColorbarBase(cbar_ax, cmap=cmap, norm=norm, orientation='horizontal')
     cb.set_label('Embedding Size (d) - $\\log_2$ scale')
+    
     # Set ticks to show actual embedding sizes, but positioned according to log2 scale
     cb.set_ticks(log2_embedding_sizes)
     cb.set_ticklabels(embedding_sizes)
     
-    # Adjust layout and save figure
-    fig.tight_layout(rect=[0, 0, 0.9, 0.96])  # Adjust for the suptitle and colorbar
+    # Save figure
     fig.savefig(f'results/q5-a/{model_name}_L{num_layers}.png', dpi=300, bbox_inches='tight')
     plt.close(fig)
     

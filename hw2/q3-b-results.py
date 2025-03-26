@@ -52,27 +52,52 @@ def extract_extrema_metrics(model_name, r_trains, seeds):
     
     return metrics_by_r_train
 
-def plot_extrema_metric(metric_name, y_label, model_names=['gpt', 'lstm'], log_scale=False, figsize=(10, 6)):
+def plot_metric_pair_grid(metric_type, model_names=['gpt', 'lstm'], log_scale=False, figsize=(15, 6)):
     """
-    Plot a specific extrema metric as a function of r_train for different models.
+    Plot train and validation metrics side by side in a 1x2 grid, as a function of r_train.
     
     Parameters:
     -----------
-    metric_name : str
-        The metric to plot (e.g., 'min_train_loss', 'max_test_accuracy')
-    y_label : str
-        The label for the y-axis
+    metric_type : str
+        The type of metric to plot: 'loss', 'accuracy' or 'steps'
     model_names : list, optional
         List of model names to include in the plot, default is ['gpt', 'lstm']
     log_scale : bool, optional
         Whether to use log scale for y-axis, default is False
     figsize : tuple, optional
-        Figure size, default is (10, 6)
+        Figure size, default is (15, 6)
     """
     # Create results directory if it doesn't exist
     os.makedirs('results/q3-b', exist_ok=True)
     
-    plt.figure(figsize=figsize)
+    # Set up metric pairs and labels based on metric_type
+    if metric_type == 'loss':
+        metric_pair = ('min_train_loss', 'min_test_loss')
+        y_labels = ('$\\mathcal{L}_{\\text{train}}$', '$\\mathcal{L}_{\\text{val}}$')
+        title = 'Loss vs $r_{train}$'
+        filename = 'loss_grid'
+    elif metric_type == 'accuracy':
+        metric_pair = ('max_train_accuracy', 'max_test_accuracy')
+        y_labels = ('$\\mathcal{A}_{\\text{train}}$', '$\\mathcal{A}_{\\text{val}}$')
+        title = 'Accuracy vs $r_{train}$'
+        filename = 'accuracy_grid'
+    elif metric_type == 'loss_steps':
+        metric_pair = ('min_train_loss_step', 'min_test_loss_step')
+        y_labels = ('$t_f(\\mathcal{L}_{\\text{train}})$', '$t_f(\\mathcal{L}_{\\text{val}})$')
+        title = 'Loss Convergence Time vs $r_{train}$'
+        filename = 'loss_steps_grid'
+    elif metric_type == 'accuracy_steps':
+        metric_pair = ('max_train_accuracy_step', 'max_test_accuracy_step')
+        y_labels = ('$t_f(\\mathcal{A}_{\\text{train}})$', '$t_f(\\mathcal{A}_{\\text{val}})$')
+        title = 'Accuracy Convergence Time vs $r_{train}$'
+        filename = 'accuracy_steps_grid'
+    else:
+        print(f"Unknown metric type: {metric_type}")
+        return
+    
+    # Create figure with 1x2 grid
+    fig, axs = plt.subplots(1, 2, figsize=figsize)
+    fig.suptitle(title, fontsize=16)
     
     # Define colors and markers for different models
     colors = {'gpt': 'blue', 'lstm': 'red'}
@@ -81,82 +106,84 @@ def plot_extrema_metric(metric_name, y_label, model_names=['gpt', 'lstm'], log_s
     # Track if we have any data to plot
     has_data = False
     
-    for model_name in model_names:
-        # Extract metrics for this model
-        metrics_by_r_train = extract_extrema_metrics(model_name, r_trains, seeds)
+    # Plot each metric in its corresponding subplot
+    for i, (metric_name, y_label) in enumerate(zip(metric_pair, y_labels)):
+        ax = axs[i]
+        ax.set_xlabel('$r_{train}$')
+        ax.set_ylabel(y_label)
+        ax.set_title(y_label)
+        ax.grid(True, linestyle='--', alpha=0.7)
         
-        if not metrics_by_r_train:
-            print(f"No data available for {model_name}")
-            continue
+        if log_scale and metric_type == 'loss':
+            ax.set_yscale('log')
+            
+        subplot_has_data = False
         
-        # Prepare data for plotting
-        x_values = []
-        y_values = []
-        y_errors = []
+        for model_name in model_names:
+            # Extract metrics for this model
+            metrics_by_r_train = extract_extrema_metrics(model_name, r_trains, seeds)
+            
+            if not metrics_by_r_train:
+                print(f"No data available for {model_name}")
+                continue
+            
+            # Prepare data for plotting
+            x_values = []
+            y_values = []
+            y_errors = []
+            
+            for r_train in sorted(metrics_by_r_train.keys()):
+                if metric_name in metrics_by_r_train[r_train]:
+                    x_values.append(r_train)
+                    y_values.append(metrics_by_r_train[r_train][metric_name])
+                    
+                    # Check if std is available for this metric
+                    std_key = f"{metric_name}_std"
+                    if std_key in metrics_by_r_train[r_train]:
+                        y_errors.append(metrics_by_r_train[r_train][std_key])
+                    else:
+                        y_errors.append(0)
+            
+            if x_values:
+                subplot_has_data = True
+                has_data = True
+                ax.errorbar(x_values, y_values, yerr=y_errors, 
+                          color=colors[model_name], marker=markers[model_name], 
+                          capsize=5, label=f"{model_name.upper()}")
         
-        for r_train in sorted(metrics_by_r_train.keys()):
-            if metric_name in metrics_by_r_train[r_train]:
-                x_values.append(r_train)
-                y_values.append(metrics_by_r_train[r_train][metric_name])
-                
-                # Check if std is available for this metric
-                std_key = f"{metric_name}_std"
-                if std_key in metrics_by_r_train[r_train]:
-                    y_errors.append(metrics_by_r_train[r_train][std_key])
-                else:
-                    y_errors.append(0)
-        
-        if x_values:
-            has_data = True
-            plt.errorbar(x_values, y_values, yerr=y_errors, 
-                         color=colors[model_name], marker=markers[model_name], 
-                         capsize=5, label=f"{model_name.upper()}")
+        if subplot_has_data:
+            ax.legend()
     
     if not has_data:
-        plt.close()
-        print(f"No data to plot for metric {metric_name}")
+        plt.close(fig)
+        print(f"No data to plot for {metric_type} metrics")
         return
     
-    # Configure the plot
-    plt.xlabel('$r_{train}$')
-    plt.ylabel(y_label)
-    plt.title(f'{y_label} vs $r_{{train}}$')
-    plt.grid(True, linestyle='--', alpha=0.7)
-    plt.legend()
-    
-    # Set y-axis to log scale if requested
-    if log_scale:
-        plt.yscale('log')
-    
-    # Save the figure
-    safe_metric = metric_name.replace('_', '-')
+    # Adjust layout and save figure
+    fig.tight_layout(rect=[0, 0, 1, 0.95])  # Adjust for the suptitle
     log_suffix = '_log' if log_scale else ''
-    plt.savefig(f'results/q3-b/{safe_metric}{log_suffix}.png', dpi=300, bbox_inches='tight')
-    plt.close()
+    plt.savefig(f'results/q3-b/{filename}{log_suffix}.png', dpi=300, bbox_inches='tight')
+    plt.close(fig)
     
-    print(f"Plot saved as results/q3-b/{safe_metric}{log_suffix}.png")
+    print(f"Grid plot saved as results/q3-b/{filename}{log_suffix}.png")
 
 if __name__ == "__main__":
-    print("Generating comparative performance plots as a function of r_train...")
+    print("Generating comparative performance grid plots as a function of r_train...")
     
     # Plot loss metrics (log scale)
-    print("\nPlotting loss metrics...")
-    plot_extrema_metric('min_train_loss', '$\\mathcal{L}_{\\text{train}}$', log_scale=True)
-    plot_extrema_metric('min_test_loss', '$\\mathcal{L}_{\\text{val}}$', log_scale=True)
+    print("\nPlotting loss metrics grid...")
+    plot_metric_pair_grid('loss', log_scale=True)
     
     # Plot accuracy metrics
-    print("\nPlotting accuracy metrics...")
-    plot_extrema_metric('max_train_accuracy', '$\\mathcal{A}_{\\text{train}}$')
-    plot_extrema_metric('max_test_accuracy', '$\\mathcal{A}_{\\text{val}}$')
+    print("\nPlotting accuracy metrics grid...")
+    plot_metric_pair_grid('accuracy')
     
     # Plot time step metrics for loss
-    print("\nPlotting time step metrics for loss...")
-    plot_extrema_metric('min_train_loss_step', '$t_f(\\mathcal{L}_{\\text{train}})$')
-    plot_extrema_metric('min_test_loss_step', '$t_f(\\mathcal{L}_{\\text{val}})$')
+    print("\nPlotting loss convergence time grid...")
+    plot_metric_pair_grid('loss_steps')
     
     # Plot time step metrics for accuracy
-    print("\nPlotting time step metrics for accuracy...")
-    plot_extrema_metric('max_train_accuracy_step', '$t_f(\\mathcal{A}_{\\text{train}})$')
-    plot_extrema_metric('max_test_accuracy_step', '$t_f(\\mathcal{A}_{\\text{val}})$')
+    print("\nPlotting accuracy convergence time grid...")
+    plot_metric_pair_grid('accuracy_steps')
     
     print("\nAll plots have been saved to the results/q3-b/ directory.") 
