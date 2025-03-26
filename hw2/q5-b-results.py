@@ -14,11 +14,48 @@ seeds = ["0", "42"]       # Seeds to average over
 num_layers_values = [1, 2, 3]  # L values
 embedding_sizes = [64, 128, 256]  # d values
 
-# Define a function to calculate the number of parameters for each model type
-def calculate_parameters(model_type, num_layers, embedding_size):
+# Actual parameter counts excluding embeddings (from log output)
+params = {
+    "lstm": {
+        "1": {
+            "64": 35364,
+            "128": 136228,
+            "256": 534564
+        },
+        "2": {
+            "64": 68388,
+            "128": 267812,
+            "256": 1059876
+        },
+        "3": {  
+            "64": 101412,
+            "128": 399396,
+            "256": 1585188
+        }
+    },
+    "gpt": {
+        "1": {
+            "64": 52004,
+            "128": 202276,
+            "256": 797732
+        },
+        "2": {
+            "64": 101668,
+            "128": 399908,
+            "256": 1586212
+        },
+        "3": {
+            "64": 151332,
+            "128": 597540,
+            "256": 2374692
+        }
+    }
+}
+
+# Define a function to get the parameter count from the params dictionary
+def get_parameter_count(model_type, num_layers, embedding_size):
     """
-    Calculate the number of parameters for a given model architecture,
-    excluding vocabulary and positional embeddings.
+    Get the parameter count for a given model architecture from the params dictionary.
     
     Parameters:
     -----------
@@ -31,39 +68,9 @@ def calculate_parameters(model_type, num_layers, embedding_size):
     
     Returns:
     --------
-    int : Number of parameters
+    int : Number of parameters (excluding embeddings)
     """
-    if model_type == "lstm":
-        # LSTM parameters (excluding embeddings)
-        # For each layer: 4 * d * (d + d + 1) for weights and biases
-        params = 0
-        for i in range(num_layers):
-            input_size = embedding_size
-            hidden_size = embedding_size
-            # 4 gates, each with weights for input, hidden, and bias
-            gate_params = 4 * hidden_size * (input_size + hidden_size + 1)
-            params += gate_params
-        return params
-    
-    elif model_type == "gpt":
-        # GPT (Transformer) parameters (excluding embeddings)
-        # For each layer: Multi-head attention + feed-forward network
-        params = 0
-        for i in range(num_layers):
-            # Self-attention: 3 projections (Q, K, V) + output projection
-            attn_params = 4 * embedding_size * embedding_size
-            # Two layer feed-forward network (with 4*d hidden dim as commonly used)
-            ff_params = embedding_size * (4 * embedding_size) + (4 * embedding_size) * embedding_size
-            # Layer normalization parameters
-            ln_params = 4 * embedding_size  # 2 layer norms per layer, each with scale and bias
-            
-            layer_params = attn_params + ff_params + ln_params
-            params += layer_params
-        
-        return params
-    
-    else:
-        raise ValueError(f"Unknown model type: {model_type}")
+    return params[model_type][str(num_layers)][str(embedding_size)]
 
 def load_all_results():
     """
@@ -82,8 +89,8 @@ def load_all_results():
             all_results[model_name][L] = {}
             
             for d in embedding_sizes:
-                # Calculate number of parameters
-                num_params = calculate_parameters(model_name, L, d)
+                # Get actual parameter count from the params dictionary
+                num_params = get_parameter_count(model_name, L, d)
                 
                 # Set up the correct base directory
                 if model_name == "lstm":
