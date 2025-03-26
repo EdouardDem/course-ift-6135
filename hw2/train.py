@@ -198,6 +198,12 @@ def train(args):
     # ==========================
     # Learning rate scheduler
     scheduler = DummyScheduler(optimizer) # Dummy scheduler that does nothing
+
+    n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    n_params_embeddings = sum(p.numel() for p in model.embedding.parameters() if p.requires_grad)
+    n_params_wo_embeddings = n_params - n_params_embeddings
+    print(f"Number of model trainable parameters: {n_params}")
+    print(f"Number of model trainable parameters (excluding embeddings): {n_params_wo_embeddings}")
     # ==========================
     # ==========================
 
