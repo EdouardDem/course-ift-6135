@@ -326,7 +326,7 @@ def load_and_combine_results(base_dir, seeds):
     should_compute_extrema = "loss_by_ordre_2" not in results["train"] or results["train"]["loss_by_order_2"] is not None
     if not should_compute_extrema:
         print("Batch reduction is none, extrema can't be computed")
-    results["extrema"] = None if should_compute_extrema else get_extrema_performance_steps_per_trials(results)
+    results["extrema"] = get_extrema_performance_steps_per_trials(results) if should_compute_extrema else None
 
     for split in splits:
         for metric in metrics:
