@@ -218,7 +218,8 @@ def train(args):
         print_step=args.print_step,
         save_model_step=args.save_model_step,
         save_statistic_step=args.save_statistic_step,
-        verbose=args.verbose
+        verbose=args.verbose,
+        reduction=args.reduction
     )
     
     # Plot

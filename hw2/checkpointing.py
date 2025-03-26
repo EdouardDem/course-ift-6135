@@ -318,6 +318,9 @@ def load_and_combine_results(base_dir, seeds):
     for split in splits:
         results[split] = {}
         for metric in metrics:
+            # Check if the metric exists in the results
+            if not metric in results_per_seed[0][split]:
+                continue
             results[split][metric] = [r[split][metric] for r in results_per_seed]
 
     results["extrema"] = get_extrema_performance_steps_per_trials(results)

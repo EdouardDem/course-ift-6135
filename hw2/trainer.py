@@ -137,9 +137,9 @@ def eval_model(model, loader, device, reduction='mean') :
         logits, *_ = model(batch_x) # (B, S, V)
         batch_loss, batch_acc = get_loss_and_accuracy(logits, batch_y, eq_positions, mask, reduction=reduction)
         n += batch_x.shape[0]
-        loss += batch_loss.item() * batch_x.shape[0]
-        acc += batch_acc * batch_x.shape[0]
         if reduction == 'none':
+            loss += batch_loss * batch_x.shape[0]
+            acc += batch_acc * batch_x.shape[0]
             eq_positions_2 = eq_positions == 3
             eq_positions_3 = eq_positions == 5
             loss_by_order_2 += batch_loss[eq_positions_2].mean() * len(eq_positions_2)
@@ -148,6 +148,9 @@ def eval_model(model, loader, device, reduction='mean') :
             acc_by_order_3 += batch_acc[eq_positions_3].mean() * len(eq_positions_3)
             n_2 += len(eq_positions_2)
             n_3 += len(eq_positions_3)
+        else:
+            loss += batch_loss.item() * batch_x.shape[0]
+            acc += batch_acc.item() * batch_x.shape[0]
         
         # Calculate L2 norm properly by summing squares of all parameters and taking sqrt
         params_norm = torch.sqrt(sum(p.pow(2).sum() for p in model.parameters()))
@@ -168,7 +171,7 @@ def eval_model(model, loader, device, reduction='mean') :
         all_metrics["loss_by_order_3"] = loss_by_order_3 / n_3
         all_metrics["acc_by_order_2"] = acc_by_order_2 / n_2
         all_metrics["acc_by_order_3"] = acc_by_order_3 / n_3
-    
+
     return all_metrics
     
 ########################################################################################
