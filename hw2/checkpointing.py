@@ -310,7 +310,6 @@ def load_and_combine_results(base_dir, seeds):
         'loss', 'accuracy', 'l2_norm', 
         'loss_by_order_2', 'loss_by_order_3', 'acc_by_order_2', 'acc_by_order_3'
     ]
-
     # Merge results from all seeds
     results = {}
     results['all_steps'] = [r['all_steps'] for r in results_per_seed]
@@ -323,7 +322,11 @@ def load_and_combine_results(base_dir, seeds):
                 continue
             results[split][metric] = [r[split][metric] for r in results_per_seed]
 
-    results["extrema"] = get_extrema_performance_steps_per_trials(results)
+    # Is batch reduction is none, we can't compute the extrema
+    should_compute_extrema = results["train"]["loss_by_order_2"] is not None
+    if not should_compute_extrema:
+        print("Batch reduction is none, extrema can't be computed")
+    results["extrema"] = None if should_compute_extrema else get_extrema_performance_steps_per_trials(results)
 
     for split in splits:
         for metric in metrics:
