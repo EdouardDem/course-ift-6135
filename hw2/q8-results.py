@@ -12,7 +12,7 @@ import seaborn as sns
 from gpt import GPT  # Import GPT model class
 
 # Configuration
-model_path = Path("logs/q8/model=gpt-optimizer=adamw-n_steps=20001-save_model_step=400002-p=11/seed=0/0/model.pth")
+model_path = Path("logs/q8/model=gpt-optimizer=adamw-n_steps=20001-save_model_step=40002-p=11/seed=0/0/model.pth")
 results_dir = Path("results/q8")
 os.makedirs(results_dir, exist_ok=True)
 
@@ -83,7 +83,6 @@ def load_model(model_path):
     model.eval()
     
     print(f"Model loaded from {model_path}")
-    print(f"Model config: layers={num_layers}, embedding_size={embedding_size}, vocab_size={vocabulary_size}")
     
     return model, container
 
