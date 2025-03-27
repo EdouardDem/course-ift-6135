@@ -37,26 +37,38 @@ def load_model(model_path):
     
     # Load the model container
     container = torch.load(model_path, map_location=torch.device('cpu'))
+
     
     # Use the same parameters as the training (see run.mjs: question8 and run_exp.py for default values)
     state_dict = container.get('model_state_dict', container)
-    num_layers = 2
-    embedding_size=2**7
-    num_heads = 4
-    vocabulary_size = 36
-    sequence_length = 6
     
+    # ------------------------------
+    # GPT model parameters:
+    # num_heads:  4
+    # num_layers:  2
+    # embedding_size:  128
+    # vocabulary_size:  16
+    # sequence_length:  6
+    # multiplier:  4
+    # dropout:  0.0
+    # non_linearity:  gelu
+    # padding_index:  15
+    # bias_attention:  True
+    # bias_classifier:  True
+    # share_embeddings:  False
+    # ------------------------------
+
     # Create GPT model instance
     model = GPT(
-        num_heads=num_heads,
-        num_layers=num_layers,
-        embedding_size=embedding_size,
-        vocabulary_size=vocabulary_size,
-        sequence_length=sequence_length,
+        num_heads=4,
+        num_layers=2,
+        embedding_size=128,
+        vocabulary_size=16,
+        sequence_length=6,
         multiplier=4,
         dropout=0.0,
         non_linearity="gelu",
-        padding_index=None,
+        padding_index=15,
         bias_attention=True,
         bias_classifier=True,
         share_embeddings=False
