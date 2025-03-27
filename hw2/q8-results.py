@@ -87,7 +87,7 @@ def get_samples_from_dataset(num_samples=2):
     Returns:
     --------
     tuple
-        Samples, tokenizer, max_length, padding_index
+        Samples, tokenizer, max_length, padding_index, q
     """
     # Parameters for dataset creation - match those used in training
     p = 11  # Modulo for operations
@@ -108,7 +108,7 @@ def get_samples_from_dataset(num_samples=2):
     inputs, targets, eq_positions, masks = next(iter(dataloader))
     
     print(f"Retrieved {num_samples} samples from the dataset")
-    return inputs, targets, eq_positions, masks, tokenizer, max_length, padding_index
+    return inputs, targets, eq_positions, masks, tokenizer, max_length, padding_index, q
 
 def run_model_with_attention(model, inputs, masks, tokenizer):
     """
@@ -145,7 +145,7 @@ def run_model_with_attention(model, inputs, masks, tokenizer):
     
     return logits, hidden_states, attentions
 
-def visualize_attention_weights(attentions, inputs, masks, tokenizer, save_dir):
+def visualize_attention_weights(attentions, inputs, masks, tokenizer, save_dir, result_modulo):
     """
     Visualize attention weights for each layer and head.
     
@@ -161,6 +161,8 @@ def visualize_attention_weights(attentions, inputs, masks, tokenizer, save_dir):
         Tokenizer for decoding tokens
     save_dir : Path
         Directory to save the visualizations
+    result_modulo : int
+        Modulo for results
     """
     # Get dimensions
     batch_size, num_layers, num_heads, seq_len, _ = attentions.shape
@@ -186,7 +188,7 @@ def visualize_attention_weights(attentions, inputs, masks, tokenizer, save_dir):
         )
         
         # Set the title for the entire figure
-        fig.suptitle(f"Attention Weights - Sample {sample_idx + 1}: {tokenizer.decode(valid_tokens)}", 
+        fig.suptitle(f"Attention Weights - Sample {sample_idx + 1}: {tokenizer.decode(valid_tokens)} (% {result_modulo})", 
                      fontsize=20, y=0.98)  # Move title up a bit
         
         # Plot each layer and head
@@ -242,13 +244,13 @@ if __name__ == "__main__":
         model, container = load_model(model_path)
         
         # Get samples from the dataset
-        inputs, targets, eq_positions, masks, tokenizer, max_length, padding_index = get_samples_from_dataset(num_samples=2)
+        inputs, targets, eq_positions, masks, tokenizer, max_length, padding_index, result_modulo = get_samples_from_dataset(num_samples=2)
         
         # Run the model and extract attention weights
         logits, hidden_states, attentions = run_model_with_attention(model, inputs, masks, tokenizer)
         
         # Visualize attention weights
-        visualize_attention_weights(attentions, inputs, masks, tokenizer, results_dir)
+        visualize_attention_weights(attentions, inputs, masks, tokenizer, results_dir, result_modulo)
         
         print("\nAttention weight visualization completed successfully!")
         
