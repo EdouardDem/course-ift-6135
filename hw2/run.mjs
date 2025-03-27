@@ -179,12 +179,13 @@ async function question7() {
 }
 
 async function question8() {
-    const steps = 10000;
+    const n_steps = 2 * 10000 + 1;
     await run({
         model: 'gpt',
         optimizer: 'adamw',
-        n_steps: steps,
-        save_model_step: steps * 2,
+        n_steps: n_steps,
+        save_model_step: n_steps * 2,
+        p: 11,
     }, 'q8', true, true, [0]);
 }
 

@@ -157,6 +157,19 @@ def train(args):
             bias_classifier = args.bias_classifier,
             share_embeddings = args.share_embeddings
         )
+        print("-"*30)
+        print("LSTM model parameters:")
+        print("vocabulary_size: ", vocabulary_size)
+        print("embedding_size: ", args.embedding_size)
+        print("hidden_size: ", args.hidden_size)
+        print("num_layers: ", args.num_layers)
+        print("dropout: ", args.dropout)
+        print("padding_index: ", padding_index)
+        print("bias_lstm: ", True)
+        print("bias_classifier: ", args.bias_classifier)
+        print("share_embeddings: ", args.share_embeddings)
+        print("-"*30)
+        
     elif args.model == "gpt":
         model = GPT(
             num_heads = args.num_heads, 
@@ -172,6 +185,21 @@ def train(args):
             bias_classifier = args.bias_classifier,
             share_embeddings = args.share_embeddings
         )
+        print("-"*30)
+        print("GPT model parameters:")
+        print("num_heads: ", args.num_heads)
+        print("num_layers: ", args.num_layers)
+        print("embedding_size: ", args.embedding_size)
+        print("vocabulary_size: ", vocabulary_size)
+        print("sequence_length: ", MAX_LENGTH)
+        print("multiplier: ", 4)
+        print("dropout: ", args.dropout)
+        print("non_linearity: ", "gelu")
+        print("padding_index: ", padding_index)
+        print("bias_attention: ", True)
+        print("bias_classifier: ", args.bias_classifier)
+        print("share_embeddings: ", args.share_embeddings)
+        print("-"*30)
     else:
         raise ValueError("Unknown model {0}".format(args.model))
 

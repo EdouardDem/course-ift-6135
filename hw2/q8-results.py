@@ -12,7 +12,7 @@ import seaborn as sns
 from gpt import GPT  # Import GPT model class
 
 # Configuration
-model_path = Path("logs/q8/model=gpt-optimizer=adamw-n_steps=10000-save_model_step=20000/seed=0/0/model.pth")
+model_path = Path("logs/q8/model=gpt-optimizer=adamw-n_steps=20001-save_model_step=400002-p=11/seed=0/0/model.pth")
 results_dir = Path("results/q8")
 os.makedirs(results_dir, exist_ok=True)
 
@@ -38,10 +38,10 @@ def load_model(model_path):
     # Load the model container
     container = torch.load(model_path, map_location=torch.device('cpu'))
     
-    # Extract model parameters from the state dict
+    # Use the same parameters as the training (see run.mjs: question8 and run_exp.py for default values)
     state_dict = container.get('model_state_dict', container)
     num_layers = 2
-    embedding_size=128
+    embedding_size=2**7
     num_heads = 4
     vocabulary_size = 36
     sequence_length = 6
@@ -90,6 +90,7 @@ def get_samples_from_dataset(num_samples=2):
         Samples, tokenizer, max_length, padding_index, q
     """
     # Parameters for dataset creation - match those used in training
+    # Use the same parameters as the training (see run.mjs: question8 and run_exp.py for default values)
     p = 11  # Modulo for operations
     q = p   # Modulo for results
     operator = "+"  # Operation
