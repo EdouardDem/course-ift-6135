@@ -12,7 +12,8 @@ import seaborn as sns
 from gpt import GPT  # Import GPT model class
 
 # Configuration
-model_path = Path("logs/q8/model=gpt-optimizer=adamw-n_steps=20001-save_model_step=40002-p=11/seed=0/0/model.pth")
+# hw2/logs/q8/model=gpt-optimizer=adamw-n_steps=10000-save_model_step=20000
+model_path = Path("logs/q8/model=gpt-optimizer=adamw-n_steps=10000-save_model_step=20000/seed=0/0/model.pth")
 results_dir = Path("results/q8")
 os.makedirs(results_dir, exist_ok=True)
 
@@ -47,7 +48,7 @@ def load_model(model_path):
     # num_heads:  4
     # num_layers:  2
     # embedding_size:  128
-    # vocabulary_size:  16
+    # vocabulary_size:  36
     # sequence_length:  6
     # multiplier:  4
     # dropout:  0.0
@@ -63,7 +64,7 @@ def load_model(model_path):
         num_heads=4,
         num_layers=2,
         embedding_size=128,
-        vocabulary_size=16,
+        vocabulary_size=36,
         sequence_length=6,
         multiplier=4,
         dropout=0.0,
@@ -102,7 +103,7 @@ def get_samples_from_dataset(num_samples=2):
     """
     # Parameters for dataset creation - match those used in training
     # Use the same parameters as the training (see run.mjs: question8 and run_exp.py for default values)
-    p = 11  # Modulo for operations
+    p = 31  # Modulo for operations
     q = p   # Modulo for results
     operator = "+"  # Operation
     r_train = 0.8   # Train-validation split
