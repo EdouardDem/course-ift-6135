@@ -336,12 +336,12 @@ def plot_metrics_vs_params(metrics_data, figsize=(15, 20)):
             ax.grid(True, linestyle='--', alpha=0.7)
             
             # Add value annotations
-            for x, y in zip(x_sorted, y_sorted):
-                ax.annotate(f'{y:.3f}', 
-                          (x, y),
-                          textcoords="offset points",
-                          xytext=(0,10),
-                          ha='center')
+            # for x, y in zip(x_sorted, y_sorted):
+            #     ax.annotate(f'{y:.3f}', 
+            #               (x, y),
+            #               textcoords="offset points",
+            #               xytext=(0,10),
+            #               ha='center')
         
         # Adjust layout and save
         fig.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust for the suptitle
