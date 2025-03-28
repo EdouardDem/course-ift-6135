@@ -277,7 +277,7 @@ def plot_metrics_vs_architecture(metrics_data, figsize=(15, 20)):
 
 def plot_metrics_vs_params(metrics_data, figsize=(15, 20)):
     """
-    Plot metrics as a function of parameter count.
+    Plot metrics as a function of parameter count with a single curve per metric.
     
     Parameters:
     -----------
@@ -294,17 +294,8 @@ def plot_metrics_vs_params(metrics_data, figsize=(15, 20)):
         fig, axs = plt.subplots(4, 2, figsize=figsize)
         fig.suptitle(f'{model_name.upper()} Model - Metrics vs Parameter Count', fontsize=16)
         
-        # Prepare data
-        L_values = np.array(metrics_data[model_name]['L'])
-        d_values = np.array(metrics_data[model_name]['d'])
+        # Get parameter values and sort them
         param_values = np.array(metrics_data[model_name]['params'])
-        
-        # Prepare color maps for L values
-        unique_L = sorted(set(L_values))
-        unique_d = sorted(set(d_values))
-        
-        L_cmap = plt.cm.viridis
-        L_norm = mcolors.Normalize(vmin=min(unique_L), vmax=max(unique_L))
         
         # Metrics to plot
         metrics = [
@@ -318,65 +309,39 @@ def plot_metrics_vs_params(metrics_data, figsize=(15, 20)):
             ('time_to_final_val_acc', 'Time to Final Validation Accuracy', 3, 1, False)
         ]
         
-        # For each metric, create a plot against parameter count
+        # For each metric, create a single plot against parameter count
         for metric_key, metric_label, row, col, use_log_scale in metrics:
             ax = axs[row, col]
             ax.set_title(metric_label)
             ax.set_xlabel('Parameter Count (excluding embeddings)')
             ax.set_ylabel(metric_label)
             
+            # Get metric values
+            y_values = np.array(metrics_data[model_name][metric_key])
+            
+            # Sort both arrays by parameter count
+            sort_idx = np.argsort(param_values)
+            x_sorted = param_values[sort_idx]
+            y_sorted = y_values[sort_idx]
+            
+            # Set scales
             if use_log_scale:
                 ax.set_yscale('log')
-            
-            # Put x-axis in log scale since parameter counts can vary widely
             ax.set_xscale('log')
             
-            # Plot connected lines for each layer count (L)
-            for L in unique_L:
-                # Filter data for this L value
-                mask = (L_values == L)
-                x = param_values[mask]
-                y = np.array(metrics_data[model_name][metric_key])[mask]
-                d = d_values[mask]
-                
-                # Sort by parameter count
-                sorted_indices = np.argsort(x)
-                x = x[sorted_indices]
-                y = y[sorted_indices]
-                d = d[sorted_indices]
-                
-                # Use color based on L
-                color = L_cmap(L_norm(L))
-                
-                # Plot the line
-                ax.plot(x, y, '-', color=color, alpha=0.7)
-                
-                # Plot individual points with sizes based on d
-                for i in range(len(x)):
-                    # Scale marker size based on d
-                    marker_size = 50 * (math.log2(d[i]) / math.log2(min(unique_d)))
-                    ax.scatter(x[i], y[i], s=marker_size, color=color, 
-                               label=f'L={L}, d={d[i]}' if i == 0 else "", alpha=0.7)
+            # Plot single line with markers
+            ax.plot(x_sorted, y_sorted, 'o-', color='blue', markersize=8)
             
+            # Add grid
             ax.grid(True, linestyle='--', alpha=0.7)
             
-            # Create custom legend for the first plot
-            if row == 0 and col == 0:
-                # Create legend entries for L values
-                L_handles = [plt.Line2D([0], [0], marker='o', color=L_cmap(L_norm(L)), markersize=8, 
-                                      label=f'L={L}', linestyle='-') for L in unique_L]
-                
-                # Create legend entries for d values
-                d_handles = [plt.Line2D([0], [0], marker='o', color='gray', 
-                                      markersize=5 * (math.log2(d) / math.log2(min(unique_d))), 
-                                      label=f'd={d}', linestyle='none') for d in unique_d]
-                
-                # Add legends
-                first_legend = ax.legend(handles=L_handles, title="Number of Layers (L)", 
-                                       loc='upper right')
-                ax.add_artist(first_legend)
-                ax.legend(handles=d_handles, title="Embedding Size (d)", 
-                       loc='upper left')
+            # Add value annotations
+            for x, y in zip(x_sorted, y_sorted):
+                ax.annotate(f'{y:.3f}', 
+                          (x, y),
+                          textcoords="offset points",
+                          xytext=(0,10),
+                          ha='center')
         
         # Adjust layout and save
         fig.tight_layout(rect=[0, 0, 1, 0.96])  # Adjust for the suptitle
