@@ -84,12 +84,12 @@ def plot_metric_pair_grid(metric_type, model_names=['gpt', 'lstm'], log_scale=Fa
     elif metric_type == 'loss_steps':
         metric_pair = ('min_train_loss_step', 'min_test_loss_step')
         y_labels = ('$t_f(\\mathcal{L}_{\\text{train}})$', '$t_f(\\mathcal{L}_{\\text{val}})$')
-        title = 'Loss Convergence Time vs $r_{train}$'
+        title = 'Best Loss Time vs $r_{train}$'
         filename = 'loss_steps_grid'
     elif metric_type == 'accuracy_steps':
         metric_pair = ('max_train_accuracy_step', 'max_test_accuracy_step')
         y_labels = ('$t_f(\\mathcal{A}_{\\text{train}})$', '$t_f(\\mathcal{A}_{\\text{val}})$')
-        title = 'Accuracy Convergence Time vs $r_{train}$'
+        title = 'Best Accuracy Time vs $r_{train}$'
         filename = 'accuracy_steps_grid'
     else:
         print(f"Unknown metric type: {metric_type}")
@@ -179,11 +179,11 @@ if __name__ == "__main__":
     plot_metric_pair_grid('accuracy')
     
     # Plot time step metrics for loss
-    print("\nPlotting loss convergence time grid...")
+    print("\nPlotting best loss time grid...")
     plot_metric_pair_grid('loss_steps')
     
     # Plot time step metrics for accuracy
-    print("\nPlotting accuracy convergence time grid...")
+    print("\nPlotting best accuracy time grid...")
     plot_metric_pair_grid('accuracy_steps')
     
     print("\nAll plots have been saved to the results/q3-b/ directory.") 
