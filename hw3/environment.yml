@@ -1,0 +1,5 @@
+name: ift-6135-hw3
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10

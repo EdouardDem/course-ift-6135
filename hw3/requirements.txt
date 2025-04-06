@@ -6,7 +6,7 @@ pillow==11.1.0
 PyYAML==6.0.2
 torch==2.6.0
 torchmetrics==1.6.2
-torchtext==0.18.0
+torchtext
 torchvision==0.21.0
 tqdm==4.67.1
 urllib3==2.3.0
