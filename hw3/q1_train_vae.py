@@ -7,6 +7,8 @@ from torch.nn import functional as F
 from torchvision import datasets, transforms
 from torchvision.utils import save_image
 from q1_vae import *
+import os
+import numpy as np
 
 parser = argparse.ArgumentParser(description='VAE MNIST Example')
 parser.add_argument('--batch-size', type=int, default=128, metavar='N',
@@ -23,6 +25,10 @@ parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
 args = parser.parse_args()
 args.cuda = not args.no_cuda and torch.cuda.is_available()
+
+# Create results directory if it doesn't exist
+if not os.path.exists('results'):
+    os.makedirs('results')
 
 torch.manual_seed(args.seed)
 
@@ -105,11 +111,37 @@ def train(epoch):
                 100. * batch_idx / len(train_loader),
                 loss.item() / len(data)))
 
-    print('====> Epoch: {} Average loss: {:.4f}'.format(
-          epoch, train_loss / len(train_loader.dataset)))
+    avg_loss = train_loss / len(train_loader.dataset)
+    print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, avg_loss))
+    return avg_loss
+
+def test(epoch):
+    model.eval()
+    test_loss = 0
+    with torch.no_grad():
+        for i, (data, _) in enumerate(test_loader):
+            data = data.to(device)
+            recon_batch, mu, logvar = model(data)
+            test_loss += loss_function(recon_batch, data, mu, logvar).item()
+
+    test_loss /= len(test_loader.dataset)
+    print('====> Epoch: {} Test set loss: {:.4f}'.format(epoch, test_loss))
+    return test_loss
 
 if __name__ == "__main__":
+    train_losses = []
+    test_losses = []
+    
     for epoch in range(1, args.epochs + 1):
-        train(epoch)
-
-    torch.save(model, 'model.pt')
+        train_loss = train(epoch)
+        test_loss = test(epoch)
+        
+        train_losses.append(train_loss)
+        test_losses.append(test_loss)
+    
+    # Save the final model
+    torch.save(model.state_dict(), 'results/vae_final.pt')
+    
+    # Save the loss values
+    np.save('results/train_losses.npy', np.array(train_losses))
+    np.save('results/test_losses.npy', np.array(test_losses))

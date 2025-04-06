@@ -1,0 +1,11 @@
+data/*
+results/*
+*.pt
+*.png
+*.npy
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+__pycache__/*
