@@ -1,0 +1,252 @@
+\documentclass[12pt]{article}
+\usepackage{babel} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{subfigure}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+\usepackage[ruled,vlined]{algorithm2e}
+
+\usepackage{xcolor}
+\usepackage{ulem}
+\usepackage{amsmath}
+
+\setlength{\parindent}{0cm}
+\addtolength{\oddsidemargin}{-2cm}
+\addtolength{\evensidemargin}{-2cm}
+\setlength{\textwidth}{18cm}
+\addtolength{\topmargin}{-2cm}
+\setlength{\textheight}{24cm}
+\addtolength{\parskip}{5mm}
+\pagestyle{fancy}
+
+\usepackage{amsthm}
+\theoremstyle{definition}
+\newtheorem{exercise}{Question}%[chapter]
+\newtheorem{answer}{Answer} 
+
+\input{math_commands.tex}
+\newif\ifexercise
+\exercisetrue
+%\exercisefalse
+\newif\ifsolution
+\solutiontrue
+% \solutionfalse
+
+\newcommand{\Exercise}[1]{
+\ifexercise#1\fi
+}
+%\newcommand{\Answer}[1]{
+%\ifsolution\begin{answer}#1\end{answer}\fi
+%}
+
+\definecolor{exercise}{rgb}{0.00, 0.00, 0.00}
+\definecolor{answer}{rgb}{0.00, 0.12, 0.60}
+\newcommand{\Answer}[1]{
+\ifsolution\color{answer}\begin{answer}#1\end{answer}\color{exercise}\fi
+}
+
+\usepackage{enumitem}
+\newcommand{\staritem}{
+\addtocounter{enumi}{1}
+\item[$\phantom{x}^{*}$\theenumi]}
+\setlist[enumerate,1]{leftmargin=*, label=\arabic*.}
+
+\newtheorem{definition}{Definition}
+
+\begin{document}
+
+\newif\ifsolution %Declaration, defaults to false
+\solutiontrue
+\fancyhead{}
+\fancyfoot{}
+\fancyhead[L]{
+  \begin{tabular}[b]{l}
+    IFT6135-W2025  \\
+    Prof: Aaron Courville \\
+  \end{tabular}
+}
+\fancyhead[R]{
+  \begin{tabular}[b]{r}
+    Assignment 3, Practical Part \\
+     Generative models \\
+  \end{tabular}
+}
+\vspace{1cm}
+\textbf{Due Date: May 2, 23:00}\\
+
+\newenvironment{homeworkProblem}[1][-1]{
+    \ifnum#1>0
+        \setcounter{homeworkProblemCounter}{#1}
+    \fi
+    \section{Problem \arabic{homeworkProblemCounter}}
+    \setcounter{partCounter}{1}
+    \enterProblemHeader{homeworkProblemCounter}
+}{
+    \exitProblemHeader{homeworkProblemCounter}
+}
+
+
+\vspace{-0.5cm}
+\underline{Instructions}
+\renewcommand{\labelitemi}{\textbullet}
+\begin{itemize}
+\item For all questions that are not graded only on the answer, show your work! Any problem without work shown will get no marks regardless of the correctness of the final answer.
+\item Please try to use a document preparation system such as LaTeX. \emph{If  you write your answers by hand, note that you risk losing marks if your writing is illegible without any possibility of regrade, at the discretion of the grader.}
+\item Submit your answers electronically via the course GradeScope. \emph{Incorrectly assigned answers can be given 0 automatically at the discretion of the grader.} To assign answers properly, please:
+\begin{itemize}
+    \item Make sure that the top of the first assigned page is the question being graded.
+    \item Do not include any part of answer to any other questions within the assigned pages.
+    \item Assigned pages need to be placed in order.
+    \item For questions with multiple parts, the answers should be written in order of the parts within the question.
+\end{itemize}
+\item  In the code, each part to fill is referenced by a TODO and `Not Implemented Error`
+\item Questions requiring written responses should be short and concise when necessary.Unnecessary wordiness will be penalized at the grader's discretion.
+\item Please sign the agreement below.
+\item It is your responsibility to follow updates to the assignment after release. All changes will be visible on Overleaf and Piazza.
+\item Any questions should be directed towards the TAs for this assignment: \textit{Vitória Barin Pacela, Philippe Martin}.
+\end{itemize}
+
+ 
+For this assignment, the GitHub link is the following: \url{https://github.com/philmar1/Teaching_IFT6135---Assignment-3---H25}
+
+\vspace{0.25in}
+{\textbf{I acknowledge I have read the above instructions and will abide by them throughout this assignment. I further acknowledge that any assignment submitted without the following form completed will result in no marks being given for this portion of the assignment..}}
+\vspace{0.5cm}\\
+\begin{tabular}{p{\linewidth}}
+Signature: \hrulefill \\\\
+Name: \hrulefill \\\\
+UdeM Student ID: \hrulefill \\
+\end{tabular}
+
+%%%%%%%%%%%%%%%%%%%
+\section{VAE (68 points)}
+
+Variational Autoencoders (VAEs) are probabilistic generative models to model data distribution $p(\vx)$.~In this question, you will be asked to train a VAE on the \emph{Binarised MNIST} dataset, using the negative ELBO loss as shown in class.
+Note that each pixel in this image dataset is \underline{binary}: The pixel is either black or white, which means each datapoint (image) a collection of binary values, and each image has size $28\times28$.
+You should model the likelihood $p_\theta(\vx|\vz)$, i.e. the decoder, as a product of Bernoulli distributions.
+
+\textbf{In this question, you should attach your code for the qualitative evaluation (questions marked with \texttt{report}) to the report.}
+
+\begin{enumerate}
+\item \textbf{(\texttt{unittest}, 6 pts)} Implement the function `{\tt log\_likelihood\_bernoulli}' in `{\tt q1\_vae.py}' to compute the log-likelihood $\log p(\vx)$ for a given binary sample $\vx$ and Bernoulli distribution $p(\vx)$. $p(\vx)$ will be parameterized by the mean of the distribution $p(\vx=1)$, and this will be given as input for the function.
+
+\item \textbf{(\texttt{unittest}, 6 pts)} Implement the function `{\tt log\_likelihood\_normal}' in `{\tt q1\_vae.py}' to compute the log-likelihood $\log p(\vx)$ for a given float vector $\vx$ and isotropic Normal distribution $p(\vz)=\gN(\bm{\mu}, \textrm{diag}(\bm{\sigma}^2))$. Note that $\bm{\mu}$ and $\log(\bm{\sigma}^2)$ will be given for Normal distributions.
+
+\item \textbf{(\texttt{unittest}, 8 pts)} Implement the function `{\tt log\_mean\_exp}' in `{\tt q1\_vae.py}' to compute the following equation\footnote{
+This is a type of log-sum-exp trick to deal with numerical underflow issues: the generation of a number that is too small to be represented in the device meant to store it. For example, probabilities of pixels of image can get really small. For more details of numerical underflow in computing log-probability, see \url{http://blog.smola.org/post/987977550/log-probabilities-semirings-and-floating-point}.} for each $\vy_i$ in a given $Y=\{\vy_1, \vy_2, \dots, \vy_i, \dots \vy_M\}$;
+$$
+\log \frac{1}{K} \sum_{k=1}^{K} \exp \left( y_i^{(k)} - a_i \right) + a_i,
+$$
+where $a_i = \max_{k} y_i^{(k)}$. Note that $\vy_i = [y_i^{(1)}, y_i^{(2)}, \dots, y_i^{(k)}, \dots, y_i^{(K)}]$s.
+
+\item \textbf{(\texttt{unittest}, 6 pts)}
+Compute the analytical solution of the KL divergence $\KL \left( q(\vz | \vx) \middle\Vert p(\vz) \right)$ for given $p$ and $q$, where $p$ and $q$ are multivariate normal distributions with diagonal covariance.
+Then, implement the function `{\tt kl\_gaussian\_gaussian\_analytic}' in `{\tt q1\_vae.py}'.
+
+\item \textbf{(\texttt{unittest}, 6 pts)} Implement the function `{\tt kl\_gaussian\_gaussian\_mc}' in `{\tt q1\_vae.py}' to compute KL diveregence $\KL \left( q(\vz | \vx) \middle\Vert p(\vz) \right)$ by using Monte Carlo estimate for given $p$ and $q$.~Note that $p$ and $q$ are multivariate normal distributions with diagonal covariance.
+
+\item \textbf{(\texttt{report}, 8~pts)}
+Train a VAE using the provided network architecture and hyperparameters from `{\tt q1\_train\_vae.py}'. 
+
+Fill in the function `{\tt loss\_function.py}' from `{\tt q1\_train\_vae.py}' by reusing your code from `{\tt q1\_vae.py}'.
+
+Optimize it with Adam, with a learning rate of $10^{-3}$, and train for 20 epochs. 
+
+Then, evaluate the model on the validation set.
+
+The model should achieve an average loss $\leq 104$ on the validation set. 
+
+Report the final validation loss of your model and plot the training and validation losses.
+
+\item \textbf{(\texttt{report}, 6~pts)} \textbf{Provide visual samples generated by the model.}
+Comment on the quality of the samples (e.g. blurriness, diversity, ``realisticness''). 
+
+\item \textbf{(\texttt{report}, 12~pts)} 
+We want to see if the model has learned a disentangled representation in the latent space.
+The VAE provided yields 20 latent factors. Plot the images from the latent traversals with 5 samples per latent factor. What can you comment about the disentanglement of the latent factors?
+
+To make the traversals, sample $z$ from your the distribution (which, in this case, is a standard Gaussian). Make small perturbations to your sample $z$ for \emph{each dimension} (e.g. for a dimension $i$, $z_i' = z_i + \epsilon$). $\epsilon$ has to be large enough to see some visual difference. For each dimension, observe if the changes result in visual variations (that means variations in $g(z)$ -- where $g$ is the decoder). 
+
+\item \textbf{(\texttt{report}, 10~pts)} \textbf{Compare between interpolating in the data space and in the latent space.}
+Pick two random points $z_0$ and $z_1$ in the latent space sampled from the prior.     
+\begin{enumerate}
+    \item For $\alpha = 0,\, 0.1,\, 0.2\, ...\, 1$ compute $z_\alpha'= \alpha z_0 + (1-\alpha) z_1 $ and plot the resulting samples $x_\alpha' = g(z_\alpha')$.
+    \item Using the data samples $x_0 = g(z_0)$ and $x_1 = g(z_1)$  and for $\alpha = 0,\, 0.1,\, 0.2\, ...\, 1$  plot the samples $\hat{x}_\alpha = \alpha x_0 + (1-\alpha) x_1 $.
+\end{enumerate}
+Explain the difference between the two schemes to interpolate between images. 
+
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Diffusion models}
+\paragraph{Implementing Denoising Diffusion Probabilistic Models (DDPM) and Classifier Free Guidance (CFG) models to generate MNIST style images (100 pts)}. \\
+\vspace{-0.5cm}
+  
+\textbf{1. Unconditional generation (45 pts.)}
+
+In this problem, you will implement a DDPM (\url{https://arxiv.org/abs/2006.11239}) class on MNIST dataset using PyTorch according to the guidence. The goal is to minimize the loss function and train the model to generate MNIST images.
+
+The UNet classes is already implemented for you. You need to implement the DDPM class (see details below) and finish the Trainer class. The images generated by the model will be automatically shown according to the Trainer class implementation. Make sure the generated images are shown in the output, it will be graded.
+
+If you need to create your own virtual environment, please create a python==3.11 venv and pip install dependencies from requirements.txt 
+
+We recommend that you follow the notebook DDPM.ipynb  on your own computer. Once you filled the methods for the DenoiseDiffusion and Trainer classes, you can copy past them in ddpm.py and trainer.py, this will be used by Gradescope. Then, when you are ready to do a training, you can import this notebook to Google Colab if you need free access to a GPU.
+
+\paragraph{Gradescope:}
+
+The files you need to complete and submit via Gradescope for auto-grading are \textcolor{red}{\texttt{q2\_trainer\_ddpm.py}}, \textcolor{red}{\texttt{q2\_ddpm.py}}.
+You must also submit your report (PDF) on Gradescope. Your report must contain answers to the problem. You do not need to submit code for these questions; the report will suffice.\\\\
+
+Grade:
+\begin{itemize}
+    \item Implement the DenoiseDiffusion class (15 points).
+    \item  Complete \textit{sample} and  \textit{generate\_intermediate\_samples} methods from the Trainer class (10 points).
+    \item Train the model to generate reasonable MNIST images within 20 epochs (10 points).
+    \item Write a report to describe
+    \begin{itemize}
+        \item The sampled images generated by each epochs and give recommendations about what could be done to improve the sampled images (5 points).
+        \item The images generated at different steps of the diffusion reverse pass by the trained model  using the  function \textit{generate\_intermediate\_samples}()   (5 points).
+    \end{itemize}
+Please note that the function to generate the image is already provided.
+\end{itemize}
+
+
+\textbf{2. Conditional generation (55 pts.)}
+
+In the next part of the problem, you will modify the code to allow user to specify the model the class to generate. To that end, the model must be trained by taking into account the labels of the training data. We will use the Classifier Free Guidance approach  (\url{https://arxiv.org/pdf/2207.12598}). The UNet class has been updated to take into account labels as input. In this tutorial, algorithm 1 will sample time $t$ uniformly, just like in previous DDPM implementation.  
+
+Once again, we recommend you to follow the notebook ClassifierFreeGuidance.ipynb  on your own computer. Once you filled the methods for the CFGDiffusion and Trainer classes, you can copy past them in cfg\_diffusion.py and trainer.py, this will be used by Gradescope. Then, when you are ready to do a training, you can import this notebook to Google Colab if you need free access to a GPU.
+
+\paragraph{Gradescope:}
+
+The files you need to complete and submit via Gradescope for auto-grading are \textcolor{red}{\texttt{q3\_trainer\_cfg.py}}, \textcolor{red}{\texttt{q3\_cfg\_diffusion.py}}.
+You must also submit your report (PDF) on Gradescope. Your report must contain answers to the problem. You do not need to submit code for these questions; the report will suffice.
+
+Grade:
+\begin{itemize}
+    \item Explain why is the model called Classifier Free  and why Guidance (10 points).
+    \item According to the paper, what would be an alternative of classifier free ? Explain how would the loss change in this alternative compared to the original DDPM loss ? (10 points)
+    \item Implement CFGDiffusion class (20 points)
+    \item Complete the Trainer.sample() method (10 points)
+    \item Write a report to describe the sampled images generated by each epochs  (5 points).
+\end{itemize}
+
+\textbf{For more details, please see the instructions provided in the Colab notebook.}
+
+Please DO NOT change the code provided, only add your own code where indicated. It is recommended that you use CPU session (for instance from VSCode) to debug when GPU is not necessary since Colab only gives 12 hrs of free GPU access at a time. If you use up the GPU resource, you may consider using Kaggle GPU resource. Thank you and good luck!
+
+\end{document}
