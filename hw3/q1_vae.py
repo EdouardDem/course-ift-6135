@@ -99,17 +99,19 @@ def kl_gaussian_gaussian_analytic(mu_q, logvar_q, mu_p, logvar_p):
     mu_p = mu_p.view(batch_size, -1)
     logvar_p = logvar_p.view(batch_size, -1)
     
-    #TODO: compute kld
-    # From https://2020machinelearning.medium.com/exploring-different-methods-for-calculating-kullback-leibler-divergence-kl-in-variational-12197138831f
+    # From https://en.wikipedia.org/wiki/Multivariate_normal_distribution
+    # log variances to variances
     var_q = torch.exp(logvar_q)
     var_p = torch.exp(logvar_p)
-    log_ratio = logvar_p - logvar_q 
-    mean_diff = (mu_q - mu_p).pow(2) 
-    ratio = (var_q + mean_diff) / (2 * var_p)
-    kl_per_dim = log_ratio + ratio - 0.5
-    kld = kl_per_dim.sum(dim=1)
+
+    term1 = logvar_p - logvar_q  # log(var_p/var_q)
+    term2 = (var_q + (mu_q - mu_p).pow(2)) / var_p  # (var_q + (mu_q - mu_p)^2)/var_p
+    term3 = -1  # constant term
+
+    kl_per_dimension = 0.5 * (term1 + term2 + term3)
+    kl_gg = kl_per_dimension.sum(dim=1)
     
-    return kld
+    return kl_gg
 
 
 def kl_gaussian_gaussian_mc(mu_q, logvar_q, mu_p, logvar_p, num_samples=1):
@@ -134,14 +136,5 @@ def kl_gaussian_gaussian_mc(mu_q, logvar_q, mu_p, logvar_p, num_samples=1):
     logvar_p = logvar_p.view(batch_size, -1).unsqueeze(1).expand(batch_size, num_samples, input_size)
 
     #TODO: compute kld
-    # From https://2020machinelearning.medium.com/exploring-different-methods-for-calculating-kullback-leibler-divergence-kl-in-variational-12197138831f
-    var_q = torch.exp(logvar_q)
-    var_p = torch.exp(logvar_p)
-    log_ratio = logvar_p - logvar_q 
-    mean_diff = (mu_q - mu_p).pow(2) 
-    ratio = (var_q + mean_diff) / (2 * var_p)
-    kl_per_dim = log_ratio + ratio - 0.5
-    kl_mc = kl_per_dim.sum(dim=1)
-
-    return kl_mc
+    raise NotImplementedError
 
