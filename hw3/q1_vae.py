@@ -135,6 +135,23 @@ def kl_gaussian_gaussian_mc(mu_q, logvar_q, mu_p, logvar_p, num_samples=1):
     mu_p = mu_p.view(batch_size, -1).unsqueeze(1).expand(batch_size, num_samples, input_size)
     logvar_p = logvar_p.view(batch_size, -1).unsqueeze(1).expand(batch_size, num_samples, input_size)
 
-    #TODO: compute kld
-    raise NotImplementedError
+    
+    # Create the standard deviation for sampling
+    std_q = torch.exp(0.5 * logvar_q)
+    epsilon = torch.randn_like(std_q)
+    z = mu_q + std_q * epsilon
+    
+    # Compute log q(z)
+    log_q_z = -0.5 * (logvar_q + ((z - mu_q) / std_q).pow(2) + math.log(2 * math.pi))
+    log_q_z = log_q_z.sum(dim=2)
+    
+    # Compute log p(z)
+    std_p = torch.exp(0.5 * logvar_p)
+    log_p_z = -0.5 * (logvar_p + ((z - mu_p) / std_p).pow(2) + math.log(2 * math.pi))
+    log_p_z = log_p_z.sum(dim=2)
+
+    kl_per_sample = log_q_z - log_p_z
+    kl_mc = kl_per_sample.mean(dim=1)
+    
+    return kl_mc
 
