@@ -24,8 +24,13 @@ def log_likelihood_bernoulli(mu, target):
     target = target.view(batch_size, -1)
 
     #TODO: compute log_likelihood_bernoulli
-    raise NotImplementedError
-
+    # Clamp values to avoid issues
+    eps = 1e-9
+    mu = torch.clamp(mu, eps, 1 - eps)
+    # From https://web.stanford.edu/class/archive/cs/cs109/cs109.1206/lectureNotes/LN20_parameters_mle.pdf
+    log_likelihood = target * torch.log(mu) + (1 - target) * torch.log(1 - mu)
+    ll_bernoulli = log_likelihood.sum(dim=1)
+    
     return ll_bernoulli
 
 
@@ -47,7 +52,9 @@ def log_likelihood_normal(mu, logvar, z):
     z = z.view(batch_size, -1)
 
     #TODO: compute log normal
-    raise NotImplementedError
+    normal_dist = torch.distributions.Normal(mu, torch.exp(logvar / 2))
+    ll_normal = normal_dist.log_prob(z)
+    ll_normal = ll_normal.sum(dim=1)
     
     return ll_normal
 
@@ -66,7 +73,9 @@ def log_mean_exp(y):
     sample_size = y.size(1)
 
     #TODO: compute log_mean_exp
-    raise NotImplementedError
+    a = torch.max(y, dim=1)[0]
+    sum = torch.sum(torch.exp(y - a.unsqueeze(1)), dim=1)
+    lme = torch.log(sum / sample_size) + a
 
     return lme 
 
@@ -89,11 +98,18 @@ def kl_gaussian_gaussian_analytic(mu_q, logvar_q, mu_p, logvar_p):
     logvar_q = logvar_q.view(batch_size, -1)
     mu_p = mu_p.view(batch_size, -1)
     logvar_p = logvar_p.view(batch_size, -1)
-
+    
     #TODO: compute kld
-    raise NotImplementedError
-
-    return kl_gg
+    # From https://2020machinelearning.medium.com/exploring-different-methods-for-calculating-kullback-leibler-divergence-kl-in-variational-12197138831f
+    var_q = torch.exp(logvar_q)
+    var_p = torch.exp(logvar_p)
+    log_ratio = logvar_p - logvar_q 
+    mean_diff = (mu_q - mu_p).pow(2) 
+    ratio = (var_q + mean_diff) / (2 * var_p)
+    kl_per_dim = log_ratio + ratio - 0.5
+    kld = kl_per_dim.sum(dim=1)
+    
+    return kld
 
 
 def kl_gaussian_gaussian_mc(mu_q, logvar_q, mu_p, logvar_p, num_samples=1):
@@ -118,6 +134,14 @@ def kl_gaussian_gaussian_mc(mu_q, logvar_q, mu_p, logvar_p, num_samples=1):
     logvar_p = logvar_p.view(batch_size, -1).unsqueeze(1).expand(batch_size, num_samples, input_size)
 
     #TODO: compute kld
-    raise NotImplementedError
+    # From https://2020machinelearning.medium.com/exploring-different-methods-for-calculating-kullback-leibler-divergence-kl-in-variational-12197138831f
+    var_q = torch.exp(logvar_q)
+    var_p = torch.exp(logvar_p)
+    log_ratio = logvar_p - logvar_q 
+    mean_diff = (mu_q - mu_p).pow(2) 
+    ratio = (var_q + mean_diff) / (2 * var_p)
+    kl_per_dim = log_ratio + ratio - 0.5
+    kl_mc = kl_per_dim.sum(dim=1)
 
     return kl_mc
+
