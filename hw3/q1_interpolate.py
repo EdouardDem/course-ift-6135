@@ -11,6 +11,7 @@ import numpy as np
 
 # Import the VAE model class from the training script
 from q1_train_vae import VAE
+from q1_helpers import load_trained_vae
 
 def interpolate(x1, x2, alpha):
     return alpha * x1 + (1 - alpha) * x2
@@ -26,22 +27,8 @@ def generate_interpolation_comparison(save_path='results'):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     
-    # Set the device
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-    # Initialize the model
-    model = VAE().to(device)
-    
-    # Check if the model file exists
-    model_path = os.path.join(save_path, 'vae_final.pt')
-    if not os.path.exists(model_path):
-        print(f"Error: Model file {model_path} not found. Please train the model first.")
-        return
-    
     # Load the trained model
-    print(f"Loading model from {model_path}")
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    model.eval()
+    model, device = load_trained_vae(save_path)
     
     # Generate two random points in latent space
     latent_dim = 20
