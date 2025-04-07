@@ -149,7 +149,7 @@ def plot_grid(num_samples, samples, eps_factor, save_path, file_name, fig_name, 
     
     # ------------------------------------------------------------
     # Add empty cell for distance (no distance for source)
-    ax = fig.add_subplot(gs[1, 5])
+    ax = fig.add_subplot(gs[1, 6])
     ax.text(0.5, 0.5, "N/A", ha='center', va='center', fontsize=grid_fs)
     ax.axis('off')
 
