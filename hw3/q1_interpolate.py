@@ -90,21 +90,6 @@ def generate_interpolation_comparison(save_path='results'):
         plt.tight_layout()
         plt.savefig(os.path.join(save_path, 'interpolation_comparison.png'), dpi=300, bbox_inches='tight')
         print(f"Created interpolation comparison at {save_path}/interpolation_comparison.png")
-        
-        # Print explanation of the differences
-        print("\nExplanation of the differences between latent space and data space interpolation:")
-        print("1. Latent Space Interpolation:")
-        print("   - The interpolation happens in the learned latent space")
-        print("   - Each intermediate point is a valid point in the latent space")
-        print("   - The decoder generates realistic images at each step")
-        print("   - The transition is smooth and maintains the structure of digits")
-        print("\n2. Data Space Interpolation:")
-        print("   - The interpolation happens directly in pixel space")
-        print("   - Results in a simple linear blend between pixels")
-        print("   - Creates ghosting/blurring effects")
-        print("   - Intermediate points are not necessarily valid digit representations")
-        print("\nThe latent space interpolation is generally preferred as it maintains the structure")
-        print("and realism of the digits throughout the interpolation process.")
 
 if __name__ == "__main__":
     generate_interpolation_comparison() 
