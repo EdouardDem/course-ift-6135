@@ -22,30 +22,46 @@ class DenoiseDiffusion():
     ### FORWARD SAMPLING
     def q_xt_x0(self, x0: torch.Tensor, t: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         # TODO: return mean and variance of q(x_t|x_0)
-        raise NotImplementedError
-
+        mean = self.gather(self.alpha_bar, t).sqrt() * x0
+        var = 1 - self.gather(self.alpha_bar, t)
         return mean, var
 
     def q_sample(self, x0: torch.Tensor, t: torch.Tensor, eps: Optional[torch.Tensor] = None):
         if eps is None:
             eps = torch.randn_like(x0)
         # TODO: return x_t sampled from q(•|x_0) according to (1)
-        raise NotImplementedError
-
+        mean, var = self.q_xt_x0(x0, t)
+        sample = mean + (var.sqrt() * eps)
         return sample
 
     ### REVERSE SAMPLING
     def p_xt_prev_xt(self, xt: torch.Tensor, t: torch.Tensor):
         # TODO: return mean and variance of p_theta(x_{t-1} | x_t) according to (2)
-        raise NotImplementedError
+        eps_theta = self.eps_model(xt, t)
+        alpha_t = self.gather(self.alpha, t)
+        beta_t = self.gather(self.beta, t)
+        alpha_bar_t = self.gather(self.alpha_bar, t)
+        
+        # Compute mean according to equation (2)
+        mu_theta = (1 / alpha_t.sqrt()) * (xt - beta_t / (1 - alpha_bar_t).sqrt() * eps_theta)
+        
+        # Compute variance
+        var = beta_t
+        
         return mu_theta, var
 
     # TODO: sample x_{t-1} from p_theta(•|x_t) according to (3)
     def p_sample(self, xt: torch.Tensor, t: torch.Tensor, set_seed=False):
         if set_seed:
             torch.manual_seed(42)
-        raise NotImplementedError
-
+        
+        # Get mean and variance
+        mu_theta, var = self.p_xt_prev_xt(xt, t)
+        
+        # Sample from N(mu_theta, var)
+        eps = torch.randn_like(xt)
+        sample = mu_theta + (var.sqrt() * eps)
+        
         return sample
 
     ### LOSS
@@ -61,6 +77,14 @@ class DenoiseDiffusion():
         if noise is None:
             noise = torch.randn_like(x0)
         # TODO
-        raise NotImplementedError
-
+        
+        # Predict noise
+        alpha_bar_t = self.gather(self.alpha_bar, t)
+        term1 = alpha_bar_t.sqrt() * x0
+        term2 = (1 - alpha_bar_t).sqrt() * noise
+        eps_theta = self.eps_model(term1 + term2, t)
+        
+        # Compute MSE loss
+        loss = torch.mean((noise - eps_theta) ** 2)
+        
         return loss
