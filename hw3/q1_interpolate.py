@@ -31,6 +31,7 @@ def generate_interpolation_comparison(save_path='results'):
     model, device = load_trained_vae(save_path)
     
     # Generate two random points in latent space
+    torch.manual_seed(6)
     latent_dim = 20
     with torch.no_grad():
         # Sample two points from the prior
