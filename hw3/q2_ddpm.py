@@ -22,8 +22,9 @@ class DenoiseDiffusion():
     ### FORWARD SAMPLING
     def q_xt_x0(self, x0: torch.Tensor, t: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         # TODO: return mean and variance of q(x_t|x_0)
-        mean = self.gather(self.alpha_bar, t).sqrt() * x0
-        var = 1 - self.gather(self.alpha_bar, t)
+        alpha_bar_t = self.gather(self.alpha_bar, t)
+        mean = alpha_bar_t.sqrt() * x0
+        var = 1 - alpha_bar_t
         return mean, var
 
     def q_sample(self, x0: torch.Tensor, t: torch.Tensor, eps: Optional[torch.Tensor] = None):
