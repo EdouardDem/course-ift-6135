@@ -8,4 +8,5 @@ results/*
 *.gif
 *.bmp
 *.tiff
-__pycache__/*
+__pycache__/
+MNISTDataset/
