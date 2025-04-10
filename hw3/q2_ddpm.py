@@ -12,6 +12,7 @@ class DenoiseDiffusion():
         self.alpha_bar = torch.cumprod(self.alpha, dim=0)
         self.n_steps = n_steps
         self.sigma2 = self.beta
+        self.loss_fn = nn.MSELoss(reduction="none")
 
 
     ### UTILS
@@ -79,13 +80,15 @@ class DenoiseDiffusion():
             noise = torch.randn_like(x0)
         # TODO
         
-        # Predict noise
+        # Sample x_t from q(x_t|x_0)
         alpha_bar_t = self.gather(self.alpha_bar, t)
-        term1 = alpha_bar_t.sqrt() * x0
-        term2 = (1 - alpha_bar_t).sqrt() * noise
-        eps_theta = self.eps_model(term1 + term2, t)
+        x_t = alpha_bar_t.sqrt() * x0 + (1 - alpha_bar_t).sqrt() * noise
+        pred_noise = self.eps_model(x_t, t)
         
-        # Compute MSE loss
-        loss = torch.mean((noise - eps_theta) ** 2)
-        
+        # Compute MSE loss across all dimensions except batch
+        loss = self.loss_fn(pred_noise, noise)
+        loss = loss.sum(dim=dim)
+        loss = loss.mean()
+
         return loss
+
