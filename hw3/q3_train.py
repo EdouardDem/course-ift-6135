@@ -9,10 +9,9 @@ import matplotlib.pyplot as plt
 from torch.amp import GradScaler, autocast
 import os
 
-from ddpm_utils.args import *
-from ddpm_utils.dataset import *
-from ddpm_utils.unet import load_weights
-from cfg_utils.unet import UNet_conditional
+from cfg_utils.args import *
+from cfg_utils.dataset import *
+from cfg_utils.unet import *
 from q3_trainer_cfg import Trainer, show_save
 from q3_cfg_diffusion import CFGDiffusion
 
@@ -26,7 +25,7 @@ def main():
 
     # Initialize the UNet model with conditioning
     eps_model = UNet_conditional(c_in=1, c_out=1, num_classes=10)
-    eps_model = load_weights(eps_model, args.MODEL_PATH)
+    # eps_model = load_weights(eps_model, args.MODEL_PATH)
     print("No weights to load" if eps_model is None else "Loaded weights from checkpoint")
 
     # Initialize the diffusion model with classifier-free guidance
@@ -68,7 +67,7 @@ def main():
         show_save(
             samples, 
             fixed_labels,
-            show=True, 
+            show=False, 
             save=True, 
             file_name=f"images/CFG_scale_{cfg_scale}.png"
         )
