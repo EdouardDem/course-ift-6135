@@ -10,3 +10,7 @@ results/*
 *.tiff
 __pycache__/
 MNISTDataset/
+submit/
+
+*.tex
+!assignement3_practice_en.tex
