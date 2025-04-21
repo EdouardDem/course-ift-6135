@@ -19,6 +19,8 @@ class CFGDiffusion():
         super().__init__()
         self.eps_model = eps_model
         self.n_steps = n_steps
+        # From https://github.com/lucidrains/denoising-diffusion-pytorch/blob/main/denoising_diffusion_pytorch/classifier_free_guidance.py
+        self.loss_fn = nn.MSELoss(reduction="none")
         
         self.lambda_min = -20
         self.lambda_max = 20
@@ -141,15 +143,19 @@ class CFGDiffusion():
             noise = torch.randn_like(x0)
         
         #TODO: q_sample z
+        # Get lambda for current timestep
         lambda_t = self.get_lambda(t)
+        
+        # Apply forward process to get noisy image at timestep t
         z_lambda_t = self.q_sample(x0, lambda_t, noise)
-
+        
         #TODO: compute loss
-        lambda_t_prim = self.get_lambda(t - 1)
-        x_t = self.p_sample(z_lambda_t, lambda_t, lambda_t_prim, x0)
-
-        loss = F.mse_loss(x_t, x0)
-
+        # Get predictions from the epsilon model
+        predicted_noise = self.eps_model(z_lambda_t, labels)
+        
+        loss = self.loss_fn(predicted_noise, noise)
+        loss = loss.sum(dim=dim)
+        loss = loss.mean()
     
         return loss
 
