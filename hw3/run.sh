@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Run the training script
-python q1_train_vae.py --epochs 20 
+# python q1_train_vae.py --epochs 20 
 
 # Run the plotting script
 python q1_plot.py
