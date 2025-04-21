@@ -75,7 +75,7 @@ class CFGDiffusion():
 
         alpha_lambda_t = self.alpha_lambda(lambda_t)
         sigma_lambda_t = self.sigma_lambda(lambda_t)
-        z_lambda_t = alpha_lambda_t * x + (sigma_lambda_t ** 2) * noise
+        z_lambda_t = alpha_lambda_t * x + sigma_lambda_t * noise
 
         return z_lambda_t
                
@@ -148,7 +148,7 @@ class CFGDiffusion():
         lambda_t_prim = self.get_lambda(t - 1)
         x_t = self.p_sample(z_lambda_t, lambda_t, lambda_t_prim, x0)
 
-        loss = F.mse_loss(x_t, labels)
+        loss = F.mse_loss(x_t, x0)
 
     
         return loss
