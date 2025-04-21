@@ -88,8 +88,8 @@ class Trainer:
                 scaler.scale(loss).backward()
                 scaler.step(self.optimizer)
                 scaler.update()
-                loss.backward()
-                self.optimizer.step()
+                # loss.backward()
+                # self.optimizer.step()
                 self.ema.step_ema(self.ema_model, self.eps_model)
 
                 running_loss += loss.item()
@@ -175,7 +175,7 @@ class Trainer:
                     show_save(
                         x_t,
                         labels,
-                        show=True,
+                        show=False,
                         save=True,
                         file_name=f"DDPM_epoch_{self.current_epoch}_sample_{t_}.png",
                     )

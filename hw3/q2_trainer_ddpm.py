@@ -138,7 +138,7 @@ class Trainer:
                     print(f"Showing/saving samples from epoch {self.current_epoch}")
                     self.show_save(
                         x,
-                        show=True,
+                        show=False,
                         save=True,
                         file_name=f"DDPM_epoch_{self.current_epoch}_sample_{t_}.png",
                     )

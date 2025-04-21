@@ -46,7 +46,7 @@ def plot_losses():
     print(f"Final validation loss: {test_losses[-1]:.4f}")
     
     # Show the plot
-    plt.show()
+    # plt.show()
 
 if __name__ == "__main__":
     plot_losses() 
