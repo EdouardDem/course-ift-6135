@@ -130,8 +130,9 @@ class Trainer:
             for t_ in tqdm(range(n_steps)):
                 
                 # TODO: Sample x_t 
-                t = torch.tensor([n_steps - t_], device=self.args.device).long()
-                x = self.diffusion.p_sample(x, t, set_seed)
+                t = n_steps - t_ - 1
+                t = torch.full((self.args.n_samples,), t, device=x.device, dtype=torch.long)
+                x = self.diffusion.p_sample(x, t)
             
                 if self.args.nb_save is not None and t_ in saving_steps:
                     print(f"Showing/saving samples from epoch {self.current_epoch}")
@@ -141,6 +142,7 @@ class Trainer:
                         save=True,
                         file_name=f"DDPM_epoch_{self.current_epoch}_sample_{t_}.png",
                     )
+
         return x
 
     def save_model(self):
