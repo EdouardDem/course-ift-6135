@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Remove saved models
-rm *.pkl
+rm -f *.pkl
 
 # Run the training script
 python q1_train_vae.py --epochs 20 --seed 42
