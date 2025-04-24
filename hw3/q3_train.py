@@ -69,7 +69,7 @@ def main():
             fixed_labels,
             show=False, 
             save=True, 
-            file_name=f"images/CFG_scale_{cfg_scale}.png"
+            file_name=f"images/q3/CFG_scale_{cfg_scale}.png"
         )
     
     print("Training completed and samples saved to images/ directory")

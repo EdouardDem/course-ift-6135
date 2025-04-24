@@ -203,7 +203,7 @@ def show_save(img_tensor, labels=None, show=True, save=True, file_name="sample.p
 
     plt.tight_layout()
     if save:
-        plt.savefig(file_name)
+        plt.savefig('images/q3/' + file_name)
     if show:
         plt.show()
     plt.close(fig)
