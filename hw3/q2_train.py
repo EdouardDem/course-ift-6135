@@ -62,7 +62,7 @@ def main():
                 axs[sample_idx, step_idx].set_title(f' Image {sample_idx} \nt={args.n_steps - step-1}', size=8)
                 axs[sample_idx, step_idx].axis('off')
         plt.tight_layout()
-        plt.savefig('images/intermediate_samples.png')
+        plt.savefig('images/q2/intermediate_samples.png')
         plt.close()
 
     plot_intermediate_samples(images, steps_to_show, n_samples=4)
